@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>만렙개미 - 홍유진</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/" class="site-title">홍유진</a>
+            <nav class="site-nav">
+                <a href="/">Projects</a>
+                <a href="https://github.com/dbwls99706" target="_blank">GitHub</a>
+            </nav>
+        </div>
+    </header>
+    <main class="container">
+        <a href="/" class="back-link">&larr; Projects</a>
+        <div class="project-hero">
+            <h1>만렙개미</h1>
+            <p class="desc">실시간 한국 주식 데이터 기반 카카오톡 모의투자 게임 챗봇. 초보 투자자부터 만렙 트레이더까지 성장하는 가상 주식 투자 게임.</p>
+            <div class="links">
+                <a class="btn btn-primary" href="https://github.com/dbwls99706/max-level-ant" target="_blank">GitHub</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>소개</h2>
+            <p>한국투자증권 KIS OpenAPI를 통해 실시간 주가 데이터를 60초 캐시로 제공하며, 시작 자본금 1,000만원과 0.1% 수수료로 실제와 유사한 투자 환경을 구현합니다. 출석 보상, 예측 게임, 각성 시스템, PvP 배틀 등 다양한 게임 요소를 포함합니다.</p>
+        </div>
+
+        <div class="section">
+            <h2>주요 기능</h2>
+            <ul>
+                <li>실시간 주가 조회 — KIS OpenAPI 연동, 60초 TTL 캐시</li>
+                <li>가상 매매 — 시작 자본금 1,000만원, 수수료 0.1%</li>
+                <li>출석 보상 — 일일 30만원, 연속 보너스 및 레벨 배수</li>
+                <li>예측 게임 — 일일 무료 복권, 과거 주가 퀴즈, 수열 맞추기</li>
+                <li>각성 시스템 — 레벨 0~20 성장, 비용 증가 및 실패 패널티</li>
+                <li>PvP 배틀 — 플레이어 간 주가 예측 대결</li>
+                <li>소셜 — 수익률/레벨 랭킹, 뉴스, 자산 히스토리 차트</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>기술 스택</h2>
+            <table class="tech-table">
+                <tr><td>백엔드</td><td>Python 3.11, FastAPI 0.109</td></tr>
+                <tr><td>서버</td><td>Uvicorn</td></tr>
+                <tr><td>데이터베이스</td><td>PostgreSQL (prod) / SQLite (dev)</td></tr>
+                <tr><td>ORM</td><td>SQLAlchemy 2.x</td></tr>
+                <tr><td>캐싱</td><td>cachetools TTLCache</td></tr>
+                <tr><td>배포</td><td>Docker (multi-stage) / Railway</td></tr>
+                <tr><td>라이선스</td><td>MIT</td></tr>
+            </table>
+        </div>
+    </main>
+    <footer class="site-footer">
+        <p>&copy; 2026 홍유진</p>
+    </footer>
+</body>
+</html>

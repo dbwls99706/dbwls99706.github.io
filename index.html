@@ -3,198 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>One Page Today - 아무것도 쓰지 않아도 하루가 일기로 남는 서비스</title>
-    <meta name="description" content="아무것도 쓰지 않아도, 스마트폰 사용 흔적만으로 하루가 한 페이지 일기로 남습니다.">
+    <title>홍유진 - Projects</title>
+    <meta name="description" content="홍유진의 오픈소스 프로젝트 포트폴리오. 로보틱스, AI, 앱 개발.">
     <meta name="google-site-verification" content="bOa6r9d87jFHgTQb7iuN5QokGsgy99_NYrz0x1jsSmk" />
     <link rel="icon" type="image/png" href="One%20Page%20Today.png">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif;
-            background-color: #121210;
-            color: #e8e0d4;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            text-align: center;
-        }
-
-        .app-icon {
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(135deg, #3a3530 0%, #2a2520 100%);
-            border-radius: 28px;
-            margin: 0 auto 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(232, 224, 212, 0.1);
-            padding: 18px;
-        }
-
-        .app-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        h1 {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: #f5f0e8;
-        }
-
-        .subtitle {
-            font-size: 18px;
-            color: #a89f93;
-            margin-bottom: 40px;
-            line-height: 1.6;
-        }
-
-        .features {
-            text-align: left;
-            margin-bottom: 40px;
-        }
-
-        .feature-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 16px;
-            padding: 20px;
-            margin-bottom: 12px;
-            background: rgba(232, 224, 212, 0.04);
-            border-radius: 16px;
-            border: 1px solid rgba(232, 224, 212, 0.08);
-        }
-
-        .feature-icon {
-            font-size: 28px;
-            flex-shrink: 0;
-            width: 44px;
-            text-align: center;
-        }
-
-        .feature-text h3 {
-            font-size: 16px;
-            font-weight: 600;
-            color: #f5f0e8;
-            margin-bottom: 4px;
-        }
-
-        .feature-text p {
-            font-size: 14px;
-            color: #8a8078;
-            line-height: 1.5;
-        }
-
-        .download-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            background: linear-gradient(135deg, #f5f0e8 0%, #e8dfd3 100%);
-            color: #1a1815;
-            text-decoration: none;
-            padding: 16px 36px;
-            border-radius: 50px;
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 50px;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .download-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 28px rgba(0, 0, 0, 0.4);
-        }
-
-        .download-btn svg {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-        }
-
-        .footer {
-            margin-top: 60px;
-            padding-top: 30px;
-            border-top: 1px solid rgba(232, 224, 212, 0.08);
-        }
-
-        .footer a {
-            color: #d4c8b8;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
-        }
-
-        .footer p {
-            color: #5a5550;
-            font-size: 13px;
-            margin-top: 12px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="app-icon"><img src="One%20Page%20Today.png" alt="One Page Today 아이콘"></div>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/" class="site-title">홍유진</a>
+            <nav class="site-nav">
+                <a href="/">Projects</a>
+                <a href="https://github.com/dbwls99706" target="_blank">GitHub</a>
+            </nav>
+        </div>
+    </header>
 
-        <h1>One Page Today</h1>
-        <p class="subtitle">아무것도 쓰지 않아도<br>하루가 일기로 남습니다.</p>
-
-        <div class="features">
-            <div class="feature-item">
-                <div class="feature-icon">📱</div>
-                <div class="feature-text">
-                    <h3>쓰지 않아도 되는 일기</h3>
-                    <p>메시지 빈도, 사진 촬영 시점, 이동 패턴, 앱 사용 흐름. 이미 남긴 흔적이 하루를 말해줍니다.</p>
-                </div>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon">📄</div>
-                <div class="feature-text">
-                    <h3>담백한 한 페이지</h3>
-                    <p>감정을 해석하지 않습니다. 시간, 변화, 리듬만을 담백하게 정리합니다.</p>
-                </div>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon">🤐</div>
-                <div class="feature-text">
-                    <h3>위로하지 않고, 조언하지 않습니다</h3>
-                    <p>공유를 전제로 하지 않습니다. 오직 나만을 위한, 조용한 기록입니다.</p>
-                </div>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon">🌙</div>
-                <div class="feature-text">
-                    <h3>하루의 끝, 최소한의 뿌듯함</h3>
-                    <p>오늘을 그냥 흘려보내지 않았다는 감각. 그것만으로 충분합니다.</p>
-                </div>
+    <main class="container">
+        <div class="hero">
+            <h1>홍유진</h1>
+            <p>로보틱스 엔지니어 & 개발자. ROS 2, 컴퓨터 비전, AI 기반 로봇 시스템을 만듭니다.</p>
+            <div class="hero-links">
+                <a href="https://github.com/dbwls99706" target="_blank">GitHub</a>
+                <a href="mailto:yujinhong3@gmail.com">yujinhong3@gmail.com</a>
             </div>
         </div>
 
-        <a class="download-btn" href="https://play.google.com/store/apps/details?id=com.onepagetoday.app" target="_blank">
-            <svg viewBox="0 0 24 24"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.61 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.5,12.92 20.16,13.19L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/></svg>
-            Google Play에서 다운로드
-        </a>
+        <!-- Apps & Services -->
+        <section class="category">
+            <h2>Apps &amp; Services</h2>
+            <div class="project-grid">
+                <div class="project-card">
+                    <h3><a href="projects/onepagetoday.html">One Page Today</a></h3>
+                    <p>아무것도 쓰지 않아도 스마트폰 사용 흔적만으로 하루가 한 페이지 일기로 남는 Android 앱.</p>
+                    <div class="project-meta">
+                        <span class="tag lang">Android</span>
+                        <span class="tag">Google Play</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <h3><a href="projects/velog-backup.html">Velog Backup</a></h3>
+                    <p>Velog 블로그 포스트를 이미지 포함하여 안전하게 백업하는 무료 웹 서비스.</p>
+                    <div class="project-meta">
+                        <span class="tag lang">Next.js / FastAPI</span>
+                        <span class="tag star">&#9733; 1</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <h3><a href="projects/max-level-ant.html">만렙개미</a></h3>
+                    <p>실시간 한국 주식 데이터 기반 카카오톡 모의투자 게임 챗봇.</p>
+                    <div class="project-meta">
+                        <span class="tag lang">Python / FastAPI</span>
+                        <span class="tag star">&#9733; 2</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-        <div class="footer">
-            <a href="privacy-policy.html">개인정보처리방침</a>
-            <p>&copy; 2026 오늘 한 페이지. All rights reserved.</p>
-        </div>
-    </div>
+        <!-- AI & Developer Tools -->
+        <section class="category">
+            <h2>AI &amp; Developer Tools</h2>
+            <div class="project-grid">
+                <div class="project-card">
+                    <h3><a href="projects/ros2-engineering-skills.html">ROS 2 Engineering Skills</a></h3>
+                    <p>AI 코딩 에이전트에 프로덕션급 ROS 2 개발 전문성을 제공하는 에이전트 스킬 모듈.</p>
+                    <div class="project-meta">
+                        <span class="tag lang">Python</span>
+                        <span class="tag star">&#9733; 8</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <h3><a href="projects/opensource-contribution-card.html">OpenSource Contribution Card</a></h3>
+                    <p>GitHub 프로필 README에 외부 오픈소스 기여를 자동으로 표시하는 SVG 위젯.</p>
+                    <div class="project-meta">
+                        <span class="tag lang">JavaScript</span>
+                        <span class="tag star">&#9733; 7</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <h3><a href="projects/deadends-dev.html">deadends.dev</a></h3>
+                    <p>AI 코딩 에이전트가 실패한 접근법을 피하도록 돕는 구조화된 실패 지식 인프라.</p>
+                    <div class="project-meta">
+                        <span class="tag lang">Python</span>
+                        <span class="tag">2,089 에러 / 51 도메인</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Robotics -->
+        <section class="category">
+            <h2>Robotics</h2>
+            <div class="project-grid">
+                <div class="project-card">
+                    <h3><a href="projects/robot-auto-factory.html">물류 자동화 시스템</a></h3>
+                    <p>TurtleBot3 + OpenManipulator-X 기반 컨베이어 벨트 부품 분류 및 운반 자동화.</p>
+                    <div class="project-meta">
+                        <span class="tag lang">Python / ROS 2</span>
+                        <span class="tag">YOLOv8</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <h3><a href="projects/vision-amr-crime-tracker.html">VisionAMR Crime Tracker</a></h3>
+                    <p>YOLOv8 + Jetson Nano 기반 범죄 차량 감지 및 자율 추적 AI 감시 시스템.</p>
+                    <div class="project-meta">
+                        <span class="tag lang">Python / ROS 2</span>
+                        <span class="tag">YOLOv8</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <h3><a href="projects/multi-robot-planet-exploration.html">다중 로봇 행성 탐사</a></h3>
+                    <p>다중 로봇 자율 협력 시스템을 활용한 외계 행성 탐사 시뮬레이션.</p>
+                    <div class="project-meta">
+                        <span class="tag lang">Python / ROS 2</span>
+                        <span class="tag">Nav2 / Gazebo</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <h3><a href="projects/office-cafe-servingbot.html">카페 서빙 로봇</a></h3>
+                    <p>오피스 카페 주문 시스템과 자율 배달 서빙 로봇 시뮬레이션.</p>
+                    <div class="project-meta">
+                        <span class="tag lang">Python / ROS 2</span>
+                        <span class="tag">SLAM / Nav2</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <h3><a href="projects/auto-mapping.html">자율 매핑 &amp; 장애물 회피</a></h3>
+                    <p>TurtleBot4 기반 자율 환경 매핑, 장애물 회피, 실시간 객체 추적.</p>
+                    <div class="project-meta">
+                        <span class="tag lang">Python / ROS 2</span>
+                        <span class="tag">SLAM / OpenCV</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <h3><a href="projects/yolov8-raspberrypi4.html">YOLOv8 on Raspberry Pi 4</a></h3>
+                    <p>라즈베리파이 4B에서 YOLOv8 객체 인식을 실행하는 ROS 2 패키지.</p>
+                    <div class="project-meta">
+                        <span class="tag lang">Python / ROS 2</span>
+                        <span class="tag star">&#9733; 1</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <h3><a href="projects/tello-control.html">Tello 드론 컬러 제어</a></h3>
+                    <p>MATLAB으로 Tello 드론을 제어하여 빨강/초록/파랑 순서로 색상을 인식하고 비행.</p>
+                    <div class="project-meta">
+                        <span class="tag lang">MATLAB</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <h3><a href="projects/ik-sim.html">2DOF 역기구학 시뮬레이션</a></h3>
+                    <p>2자유도 로봇 팔의 역기구학을 시각적으로 시뮬레이션하는 교육용 도구.</p>
+                    <div class="project-meta">
+                        <span class="tag lang">Python / HTML</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <h3><a href="projects/robotics-control.html">Robotics Control</a></h3>
+                    <p>다자유도 로봇 시스템의 동역학, 제어, 파라미터 추정 MATLAB 구현.</p>
+                    <div class="project-meta">
+                        <span class="tag lang">MATLAB</span>
+                        <span class="tag star">&#9733; 1</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p><a href="privacy-policy.html">개인정보처리방침</a> &middot; &copy; 2026 홍유진</p>
+    </footer>
 </body>
 </html>

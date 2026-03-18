@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>물류 자동화 시스템 - 홍유진</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/" class="site-title">홍유진</a>
+            <nav class="site-nav">
+                <a href="/">Projects</a>
+                <a href="https://github.com/dbwls99706" target="_blank">GitHub</a>
+            </nav>
+        </div>
+    </header>
+    <main class="container">
+        <a href="/" class="back-link">&larr; Projects</a>
+        <div class="project-hero">
+            <h1>물류 자동화 시스템</h1>
+            <p class="desc">TurtleBot3 + OpenManipulator-X 기반 컨베이어 벨트 부품 분류 및 운반 자동화 시스템.</p>
+            <div class="links">
+                <a class="btn btn-primary" href="https://github.com/dbwls99706/robot_auto_factory" target="_blank">GitHub</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>소개</h2>
+            <p>ROS 2 기반 물류 자동화 시스템으로, TurtleBot3 Waffle과 OpenManipulator-X를 결합하여 컨베이어 벨트에서 부품을 분류하고 운반합니다. YOLOv8 인식 결과를 바탕으로 박스 분류 및 컨베이어 배치를 수행하며, 로봇 위치 분산 약 ±1cm에서도 안정적으로 동작합니다.</p>
+        </div>
+
+        <div class="section">
+            <h2>주요 기능</h2>
+            <ul>
+                <li>YOLO 기반 박스 분류 — Unity 6로 학습 데이터 생성, YOLOv8으로 실시간 인식</li>
+                <li>관리 인터페이스 — 실시간 카메라 피드, YOLO 감지 결과 표시, 수동 컨베이어 제어</li>
+                <li>ArUco 마커 추적 — 글로벌 카메라 기반 마커 상대 위치/각도 측정</li>
+                <li>로봇 위치 분산 ±1cm에서도 안정적 동작</li>
+                <li>작업 완료 시 경과 시간 표시 알림</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>기술 스택</h2>
+            <table class="tech-table">
+                <tr><td>언어</td><td>Python 3</td></tr>
+                <tr><td>OS</td><td>Ubuntu 22.04 LTS</td></tr>
+                <tr><td>프레임워크</td><td>ROS 2 Humble</td></tr>
+                <tr><td>하드웨어</td><td>TurtleBot3 Waffle, OpenManipulator-X, Arduino, 컨베이어</td></tr>
+                <tr><td>비전</td><td>OpenCV 4.5.4, YOLOv8</td></tr>
+                <tr><td>GUI</td><td>PyQt5</td></tr>
+                <tr><td>팀</td><td>3인 (2024.09 - 2024.11)</td></tr>
+            </table>
+        </div>
+    </main>
+    <footer class="site-footer">
+        <p>&copy; 2026 홍유진</p>
+    </footer>
+</body>
+</html>

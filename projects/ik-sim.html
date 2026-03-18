@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2DOF 역기구학 시뮬레이션 - 홍유진</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/" class="site-title">홍유진</a>
+            <nav class="site-nav">
+                <a href="/">Projects</a>
+                <a href="https://github.com/dbwls99706" target="_blank">GitHub</a>
+            </nav>
+        </div>
+    </header>
+    <main class="container">
+        <a href="/" class="back-link">&larr; Projects</a>
+        <div class="project-hero">
+            <h1>2DOF 역기구학 시뮬레이션</h1>
+            <p class="desc">2자유도 로봇 팔의 역기구학을 시각적으로 시뮬레이션하는 교육용 도구.</p>
+            <div class="links">
+                <a class="btn btn-primary" href="https://github.com/dbwls99706/ik_sim" target="_blank">GitHub</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>소개</h2>
+            <p>2자유도 로봇 팔이 목표 위치에 도달하기 위해 관절 각도를 계산하는 과정을 시각적으로 보여주는 교육용 시뮬레이터입니다. 기하학적 방법과 야코비안 수치 방법 두 가지 접근법을 제공합니다.</p>
+        </div>
+
+        <div class="section">
+            <h2>역기구학 방법</h2>
+            <ul>
+                <li>기하학적 방법 (ik.py) — 삼각함수와 코사인 법칙을 이용한 해석적 풀이. 즉각적인 각도 계산.</li>
+                <li>야코비안 수치 방법 (ik_jacobian.html) — 야코비안 행렬 역행렬을 이용한 반복적 접근. 수렴 과정 애니메이션, 반복 횟수, 오차 표시.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>주요 기능</h2>
+            <ul>
+                <li>링크 길이 및 목표 X, Y 좌표 조정 가능</li>
+                <li>실시간 관절 각도 계산 및 그래픽 시각화</li>
+                <li>작업 공간 경계 감지 및 특이점 경고</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>기술 스택</h2>
+            <table class="tech-table">
+                <tr><td>언어</td><td>Python, HTML/JavaScript</td></tr>
+                <tr><td>라이브러리</td><td>NumPy, Matplotlib, Tkinter</td></tr>
+                <tr><td>라이선스</td><td>MIT</td></tr>
+            </table>
+        </div>
+    </main>
+    <footer class="site-footer">
+        <p>&copy; 2026 홍유진</p>
+    </footer>
+</body>
+</html>

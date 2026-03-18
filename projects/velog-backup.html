@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velog Backup - 홍유진</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/" class="site-title">홍유진</a>
+            <nav class="site-nav">
+                <a href="/">Projects</a>
+                <a href="https://github.com/dbwls99706" target="_blank">GitHub</a>
+            </nav>
+        </div>
+    </header>
+    <main class="container">
+        <a href="/" class="back-link">&larr; Projects</a>
+        <div class="project-hero">
+            <h1>Velog Backup</h1>
+            <p class="desc">Velog 블로그 포스트를 이미지 포함하여 안전하게 백업하는 무료 웹 서비스.</p>
+            <div class="links">
+                <a class="btn btn-primary" href="https://github.com/dbwls99706/Velog_Backup" target="_blank">GitHub</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>소개</h2>
+            <p>Velog 포스트를 이미지를 포함하여 완전히 백업하고, GitHub 저장소와 동기화하며, 이메일 알림까지 지원하는 무료 서비스입니다. Velog 포스트가 삭제되어도 백업본이 영구 보존됩니다.</p>
+        </div>
+
+        <div class="section">
+            <h2>주요 기능</h2>
+            <ul>
+                <li>이미지 포함 백업 — 포스트 이미지를 실제 파일로 다운로드</li>
+                <li>체계적 폴더 구조 — 제목별 폴더로 정리된 ZIP 다운로드</li>
+                <li>GitHub 저장소 동기화 — 비공개 GitHub 저장소에 자동 커밋</li>
+                <li>이메일 알림 — 백업 완료/실패 시 알림</li>
+                <li>서버 저장 — 데이터베이스에 안전하게 보관</li>
+                <li>영구 보존 — Velog 포스트 삭제 후에도 백업 유지</li>
+                <li>완전 무료</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>기술 스택</h2>
+            <table class="tech-table">
+                <tr><td>프론트엔드</td><td>Next.js 14, React 18, Tailwind CSS, TypeScript</td></tr>
+                <tr><td>백엔드</td><td>FastAPI, SQLAlchemy, Python 3.11</td></tr>
+                <tr><td>데이터베이스</td><td>PostgreSQL (Supabase)</td></tr>
+                <tr><td>인증</td><td>GitHub OAuth, JWT</td></tr>
+                <tr><td>배포</td><td>Vercel (프론트) / Railway (백엔드)</td></tr>
+            </table>
+        </div>
+    </main>
+    <footer class="site-footer">
+        <p>&copy; 2026 홍유진</p>
+    </footer>
+</body>
+</html>

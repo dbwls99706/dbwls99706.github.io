@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tello 드론 컬러 제어 - 홍유진</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/" class="site-title">홍유진</a>
+            <nav class="site-nav">
+                <a href="/">Projects</a>
+                <a href="https://github.com/dbwls99706" target="_blank">GitHub</a>
+            </nav>
+        </div>
+    </header>
+    <main class="container">
+        <a href="/" class="back-link">&larr; Projects</a>
+        <div class="project-hero">
+            <h1>Tello 드론 컬러 제어</h1>
+            <p class="desc">MATLAB으로 Ryze Tello 드론을 제어하여 빨강 → 초록 → 파랑 순서로 색상을 인식하고 비행 명령을 실행.</p>
+            <div class="links">
+                <a class="btn btn-primary" href="https://github.com/dbwls99706/tello_control" target="_blank">GitHub</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>소개</h2>
+            <p>MATLAB과 Ryze Tello 드론을 이용해 카메라로 빨간색 → 초록색 → 파란색 순서로 물체를 인식하고, 각 색상에 따라 다른 비행 동작을 수행합니다.</p>
+        </div>
+
+        <div class="section">
+            <h2>비행 로직</h2>
+            <ul>
+                <li>지정된 고도에서 이륙</li>
+                <li>오른쪽으로 0.2m 단위 이동</li>
+                <li>빨간색 감지 시 — 0.2m 단위 상승</li>
+                <li>초록색 감지 시 — 오른쪽 이동 계속</li>
+                <li>파란색 감지 시 — 착륙</li>
+                <li>무한 루프 실행, CTRL+C로 수동 종료</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>기술 스택</h2>
+            <table class="tech-table">
+                <tr><td>언어</td><td>MATLAB</td></tr>
+                <tr><td>하드웨어</td><td>Ryze Tello Drone</td></tr>
+                <tr><td>핵심 파일</td><td>controlTello.m</td></tr>
+                <tr><td>라이선스</td><td>MIT</td></tr>
+            </table>
+        </div>
+    </main>
+    <footer class="site-footer">
+        <p>&copy; 2026 홍유진</p>
+    </footer>
+</body>
+</html>

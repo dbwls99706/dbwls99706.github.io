@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>자율 매핑 & 장애물 회피 - 홍유진</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/" class="site-title">홍유진</a>
+            <nav class="site-nav">
+                <a href="/">Projects</a>
+                <a href="https://github.com/dbwls99706" target="_blank">GitHub</a>
+            </nav>
+        </div>
+    </header>
+    <main class="container">
+        <a href="/" class="back-link">&larr; Projects</a>
+        <div class="project-hero">
+            <h1>자율 매핑 &amp; 장애물 회피</h1>
+            <p class="desc">TurtleBot4 기반 자율 환경 매핑, 장애물 회피, 실시간 객체 추적 시스템.</p>
+            <div class="links">
+                <a class="btn btn-primary" href="https://github.com/dbwls99706/auto_mapping_with_obstacle_avoidance" target="_blank">GitHub</a>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>소개</h2>
+            <p>OccupancyGrid 데이터를 분석하여 미탐색 영역, 자유 공간, 벽을 구분하고 자율적으로 미매핑 영역을 탐색하여 환경 지도를 완성합니다. 매핑 완료 후 벽면 추적(Wall Following) 행동으로 전환하며, ORB 알고리즘으로 실시간 객체를 추적합니다.</p>
+        </div>
+
+        <div class="section">
+            <h2>주요 기능</h2>
+            <ul>
+                <li>자동 매핑 — OccupancyGrid 분석, 미탐색 영역 자율 탐색</li>
+                <li>벽면 추적 — 매핑 완료 후 /exploration_done 토픽 수신, 10초 간격 방향 전환</li>
+                <li>객체 추적 — ORB 알고리즘 기반 실시간 감지, 해밍 거리 기반 특징점 정렬</li>
+                <li>파라미터 최적화를 통한 환경 지도 완성</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>기술 스택</h2>
+            <table class="tech-table">
+                <tr><td>언어</td><td>Python 3</td></tr>
+                <tr><td>OS</td><td>Ubuntu 22.04</td></tr>
+                <tr><td>프레임워크</td><td>ROS 2 Humble</td></tr>
+                <tr><td>하드웨어</td><td>TurtleBot4</td></tr>
+                <tr><td>네비게이션</td><td>SLAM, Nav2</td></tr>
+                <tr><td>비전</td><td>OpenCV (ORB)</td></tr>
+                <tr><td>팀</td><td>3인 (2024.11-12, 7일)</td></tr>
+            </table>
+        </div>
+    </main>
+    <footer class="site-footer">
+        <p>&copy; 2026 홍유진</p>
+    </footer>
+</body>
+</html>
