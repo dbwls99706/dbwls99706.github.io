@@ -334,6 +334,7 @@ button:focus-visible {
     transform-style: preserve-3d;
     will-change: transform;
     overflow: hidden;
+    cursor: pointer;
 }
 
 .project-card::before {
@@ -477,6 +478,20 @@ button:focus-visible {
 }
 .btn-primary { background: var(--text-primary); color: var(--bg-primary); }
 .btn-secondary { background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid var(--border); }
+.btn-icon {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    color: var(--text-muted);
+}
+.btn-icon:hover {
+    color: var(--text-primary);
+    border-color: var(--border-hover);
+}
 
 /* Sections */
 .section {
