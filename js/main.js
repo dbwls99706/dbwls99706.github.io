@@ -63,6 +63,16 @@
         }
     }
 
+    // ===== Clickable Project Cards =====
+    document.querySelectorAll('.project-card').forEach(function (card) {
+        card.addEventListener('click', function (e) {
+            var link = card.querySelector('h3 a');
+            if (link && !e.target.closest('a')) {
+                link.click();
+            }
+        });
+    });
+
     // ===== 3D Card Tilt Effect =====
     var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
