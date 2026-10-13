@@ -40,7 +40,7 @@
     <main id="main" class="container">
         <section class="hero" aria-label="소개">
             <h1>Yujin Hong</h1>
-            <p>로봇 제어와 자율주행을 실제 현장에 연결하는 소프트웨어 엔지니어. C++, Python, ROS 2를 중심으로 실시간 제어, 산업용 통신, 센서 연동, 안전한 로봇 운용 구조를 만든다.</p>
+            <p><strong class="hero-motto">움직이게 하는 것보다 확실히 멈추게 하는 것이 더 어렵다.</strong>로봇 제어와 자율주행을 실제 현장에 연결하는 로봇 소프트웨어 연구원으로, C++, Python, ROS 2를 중심으로 실시간 제어, 산업용 통신, 센서 연동, 안전 게이트를 만든다.</p>
             <div class="hero-links">
                 <a href="https://github.com/dbwls99706" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12z"/></svg></a>
                 <a href="https://www.linkedin.com/in/dbwls/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
@@ -51,21 +51,32 @@
 
         <section class="category" id="experience">
             <h2>Experience</h2>
-            <div class="project-grid">
+            <div class="project-grid experience-grid">
                 <article class="project-card" style="cursor: default;">
-                    <h3>VIRNECT · Robotics Software Engineer</h3>
-                    <p>2026.07 - Present. Unitree Go2 기반 공장 자율주행·관제 시스템의 로봇 파트를 담당한다. 1호기에서는 기존 FAST-LIO2 출력을 Nav2 목적지 주행에 연동했고, 2호기는 vendor uSLAM·SDK2 기반으로 재구축했다. 측위·위치 신선도·지도 정합성·운용 상태·비상정지 조건을 확인하는 안전 게이트와 REST/SSE 관제 인터페이스를 개발했다.</p>
+                    <h3>VIRNECT · 피지컬AI본부 로봇&amp;비전팀 연구원</h3>
+                    <p class="card-period">2026.07 - Present</p>
+                    <ul class="card-points">
+                        <li>Unitree Go2 기반 공장 자율주행·관제 시스템의 로봇 파트 담당</li>
+                        <li>Livox MID-360 + FAST-LIO2 측위를 Nav2 목적지 주행에 연동</li>
+                        <li>측위·위치 신선도·지도 정합성·비상정지 조건을 확인하는 안전 게이트와 REST/SSE Robot Gateway 개발</li>
+                        <li>공장 현장 시험에서 단거리 주행·도킹 검증, ArUco 앵커 위치 보정과 동적 물체 제거 지도로 장거리 순찰 확장 중</li>
+                    </ul>
                     <div class="project-meta">
                         <span class="tag lang">C++ / Python / ROS 2</span>
-                        <span class="tag">Nav2 / SLAM / 3D LiDAR</span>
+                        <span class="tag">Nav2 / FAST-LIO2 / 3D LiDAR</span>
                     </div>
                 </article>
                 <article class="project-card" style="cursor: default;">
-                    <h3>NBYUS · Robotics Software Engineer</h3>
-                    <p>2025.06 - 2026.07. 산업 자동화 로봇 SW를 개발했다. Xenomai+EtherCAT 1ms 제어 시스템의 모션 기능을 확장하고 Keyence 라인 레이저 보정으로 용접 갭 오차를 4.3mm에서 0.4mm로 줄였다. STM32 펌웨어와 RS485 통신 라이브러리, RealSense+YOLO 센터링, MQTT 다중 로봇 제어도 구현했다.</p>
+                    <h3>NBYUS(엔바이어스) · 연구원</h3>
+                    <p class="card-period">2025.06 - 2026.07</p>
+                    <ul class="card-points">
+                        <li>파이프 스풀 용접: Xenomai+EtherCAT 1ms 제어기에 CSV 궤적 재생을 추가하고 Keyence LJ-V7080 라인 레이저를 연동해 용접 갭 오차를 4.3mm에서 0.4mm로 줄임, 고객사 현장 용접 시험 완료</li>
+                        <li>LNG 이송장치: OpenCR(STM32) 펌웨어와 DMC-200 독자 규격(MC-RS485) 통신 계층 구현</li>
+                        <li>스마트 스튜디오: RealSense + YOLO 자동 센터링, MQTT 기반 로봇 3대 동시 제어</li>
+                    </ul>
                     <div class="project-meta">
                         <span class="tag lang">C++ / Python / STM32</span>
-                        <span class="tag">EtherCAT / RS485 / MQTT</span>
+                        <span class="tag">Xenomai / EtherCAT / RS485 / MQTT</span>
                     </div>
                 </article>
             </div>
@@ -76,7 +87,7 @@
             <div class="project-grid">
                 <article class="project-card">
                     <h3><a href="projects/opensource-ros2-contributions.html">ROS 2 업스트림 기여</a></h3>
-                    <p>rclcpp #3047, rclpy #1492, rosbag2 #2135 등 ROS 2 코어 저장소 PR 3건을 머지했다. Humble의 callback shutdown deadlock을 바로잡는 rclpy #1671 backport도 리뷰 중이다.</p>
+                    <p>rclcpp #3047, rclpy #1492, rosbag2 #2135 등 ROS 2 코어 저장소에 PR 3건을 머지했다. Humble의 callback shutdown 교착 문제는 원인을 다시 추적해 upstream 수정을 정식 backport하는 rclpy #1671로 정정했고, 메인테이너 승인 후 머지를 앞두고 있다.</p>
                     <div class="project-meta">
                         <span class="tag lang">C++ / Python</span>
                         <span class="tag">ros2/rclcpp · rclpy · rosbag2</span>
@@ -84,10 +95,10 @@
                 </article>
                 <article class="project-card" data-repo="dbwls99706/ros2-engineering-skills">
                     <h3><a href="projects/ros2-engineering-skills.html">ROS 2 Engineering Skills</a></h3>
-                    <p>Claude Code, Codex 등 AI 코딩 에이전트가 프로덕션급 ROS 2 개발 원칙과 검증 절차를 사용할 수 있도록 만든 에이전트 스킬.</p>
+                    <p>Claude Code, Codex, Cursor, Gemini CLI 등 AI 코딩 에이전트가 프로덕션급 ROS 2 개발 원칙과 검증 절차를 따르도록 만든 에이전트 스킬. v1.7.0, Humble부터 Rolling까지 5개 배포판을 CI로 검증한다.</p>
                     <div class="project-meta">
                         <span class="tag lang">Python / ROS 2</span>
-                        <span class="tag star js-star">&#9733; 166</span>
+                        <span class="tag star js-star">&#9733; 221</span>
                     </div>
                 </article>
                 <article class="project-card" data-repo="dbwls99706/agent-thanks">
@@ -95,7 +106,7 @@
                     <p>AI 보조 개발 중 실제로 사용한 오픈소스 저장소를 탐지하고, 사용자의 동의 후 GitHub Star로 감사를 남기는 consent-first CLI.</p>
                     <div class="project-meta">
                         <span class="tag lang">Python / CLI</span>
-                        <span class="tag star js-star">&#9733; 1</span>
+                        <span class="tag star js-star">&#9733; 2</span>
                     </div>
                 </article>
                 <article class="project-card" data-repo="dbwls99706/OpenSource-contribution-card">
@@ -103,7 +114,7 @@
                     <p>GitHub 프로필 README에 외부 오픈소스 기여를 자동으로 표시하는 SVG 위젯.</p>
                     <div class="project-meta">
                         <span class="tag lang">JavaScript</span>
-                        <span class="tag star js-star">&#9733; 8</span>
+                        <span class="tag star js-star">&#9733; 12</span>
                     </div>
                 </article>
             </div>
@@ -120,12 +131,28 @@
                         <span class="tag">GPT Vision / Android</span>
                     </div>
                 </article>
+                <article class="project-card">
+                    <h3><a href="https://www.living-haemong.co.kr" target="_blank" rel="noopener noreferrer">리빙해몽</a></h3>
+                    <p>음양오행·십이지신·반음몽 등 한국 전통 해몽 원리로 꿈을 풀이하는 AI 웹 서비스. 소셜 로그인, 해몽 기록 저장, 프리미엄 리포트 결제까지 갖춰 운영 중이다.</p>
+                    <div class="project-meta">
+                        <span class="tag lang">Next.js / Prisma</span>
+                        <span class="tag">GPT-4o-mini / NicePay</span>
+                    </div>
+                </article>
+                <article class="project-card" style="cursor: default;">
+                    <h3>robo.brief</h3>
+                    <p>로보틱스·Physical AI 뉴스를 수집하고 선별해 인스타그램 카드뉴스로 만드는 봇. 텔레그램에서 승인한 건만 게시하며, Oracle Cloud 무료 서버에서 운영한다.</p>
+                    <div class="project-meta">
+                        <span class="tag lang">Python / Docker</span>
+                        <span class="tag">Telegram / Instagram</span>
+                    </div>
+                </article>
                 <article class="project-card" data-repo="dbwls99706/max-level-ant">
                     <h3><a href="projects/max-level-ant.html">만렙개미</a></h3>
                     <p>실시간 한국 주식 데이터 기반 카카오톡 모의투자 게임 챗봇.</p>
                     <div class="project-meta">
                         <span class="tag lang">Python / FastAPI</span>
-                        <span class="tag star js-star">&#9733; 4</span>
+                        <span class="tag star js-star">&#9733; 5</span>
                     </div>
                 </article>
                 <article class="project-card" data-repo="dbwls99706/Velog_Backup">
@@ -140,7 +167,7 @@
         </section>
 
         <section class="category">
-            <h2>Education &amp; Training</h2>
+            <h2>Education &amp; Research</h2>
             <div class="project-grid">
                 <article class="project-card" style="cursor: default;">
                     <h3>광운대학교 로봇학부 정보제어전공</h3>
@@ -151,11 +178,19 @@
                     </div>
                 </article>
                 <article class="project-card" style="cursor: default;">
-                    <h3>두산로보틱스 인재양성 과정</h3>
-                    <p>2025.01. 협동로봇 DART 플랫폼의 운용, 안전 기능과 로봇 응용 개발 과정을 이수했다.</p>
+                    <h3>두산로보틱스 ROKEY 부트캠프</h3>
+                    <p>2024.07 - 2025.01. AI 로보틱스 인재양성 과정 800시간을 수료했다. 협동로봇 DART 플랫폼 운용과 안전 기능, ROS 2 기반 로봇 응용 개발을 다뤘다.</p>
                     <div class="project-meta">
-                        <span class="tag lang">Collaborative Robot</span>
-                        <span class="tag">DART</span>
+                        <span class="tag lang">Collaborative Robot / ROS 2</span>
+                        <span class="tag">800h</span>
+                    </div>
+                </article>
+                <article class="project-card" style="cursor: default;">
+                    <h3>ICROS 2024 학술대회 논문</h3>
+                    <p>2024. 제어로봇시스템학회(ICROS) 2024 학술대회 논문에 공동저자로 참여했다.</p>
+                    <div class="project-meta">
+                        <span class="tag lang">Publication</span>
+                        <span class="tag">공동저자</span>
                     </div>
                 </article>
             </div>

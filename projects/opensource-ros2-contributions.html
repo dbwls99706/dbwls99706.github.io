@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ROS 2 업스트림 기여 - Yujin Hong</title>
-    <meta name="description" content="ROS 2 코어 저장소(rclcpp, rclpy, rosbag2)에 PR 3건을 제출해 모두 머지되었다. 실사용에서 발견한 빌드 의존성, deadlock, 입력 검증 문제 수정.">
+    <meta name="description" content="ROS 2 코어 저장소(rclcpp, rclpy, rosbag2)에 PR 3건을 머지했다. 실사용에서 발견한 빌드 의존성, 콜백 교착, 입력 검증 문제를 수정하고, rclpy #1671로 Humble backport를 정정했다.">
     <meta property="og:title" content="ROS 2 업스트림 기여 - Yujin Hong">
-    <meta property="og:description" content="ROS 2 코어 저장소(rclcpp, rclpy, rosbag2)에 PR 3건을 제출해 모두 머지되었다. 실사용에서 발견한 빌드 의존성, deadlock, 입력 검증 문제 수정.">
+    <meta property="og:description" content="ROS 2 코어 저장소(rclcpp, rclpy, rosbag2)에 PR 3건을 머지했다. 실사용에서 발견한 빌드 의존성, 콜백 교착, 입력 검증 문제를 수정하고, rclpy #1671로 Humble backport를 정정했다.">
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://dbwls99706.github.io/projects/opensource-ros2-contributions.html">
     <meta property="og:locale" content="ko_KR">
@@ -44,7 +44,7 @@
         <a href="/" class="back-link">&larr; Projects</a>
         <section class="project-hero">
             <h1>ROS 2 업스트림 기여</h1>
-            <p class="desc">ROS 2 코어 저장소(rclcpp, rclpy, rosbag2)에 PR 3건을 제출해 모두 머지되었다. 빌드 의존성, 콜백 데드락, 입력 검증과 관련된 실사용에서 발견한 문제들이다.</p>
+            <p class="desc">ROS 2 코어 저장소(rclcpp, rclpy, rosbag2)에 PR 3건을 머지했다. 빌드 의존성, 콜백 교착, 입력 검증과 관련해 실사용에서 발견한 문제들이다. Humble 콜백 교착 문제는 원인을 다시 추적해 rclpy #1671로 정정했다.</p>
         </section>
 
         <section class="section">
@@ -55,12 +55,22 @@
                     <a href="https://github.com/ros2/rclcpp/pull/3047" target="_blank" rel="noopener noreferrer">github.com/ros2/rclcpp/pull/3047</a>
                 </li>
                 <li>
-                    <strong>rclpy #1492</strong> — 콜백 내부에서 노드를 shutdown할 때 발생하는 deadlock 수정. 비동기 컨텍스트에서 안전하게 종료할 수 있도록 락 구조 변경.<br>
+                    <strong>rclpy #1492</strong> — Humble에서 타이머·구독 콜백 안에서 <code>rclpy.shutdown()</code>을 호출하면 프로세스가 멈추는 교착 문제(#1489)에 대응한 backport. 이미 종료 중인 executor의 <code>shutdown()</code>이 즉시 반환되도록 수정.<br>
                     <a href="https://github.com/ros2/rclpy/pull/1492" target="_blank" rel="noopener noreferrer">github.com/ros2/rclpy/pull/1492</a>
                 </li>
                 <li>
                     <strong>rosbag2 #2135</strong> — Reader 생성자에서 null 입력에 대한 사전 검증 추가. 잘못된 인자가 들어왔을 때 크래시 대신 명확한 에러를 던지도록 수정.<br>
                     <a href="https://github.com/ros2/rosbag2/pull/2135" target="_blank" rel="noopener noreferrer">github.com/ros2/rosbag2/pull/2135</a>
+                </li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2>정정 PR</h2>
+            <ul>
+                <li>
+                    <strong>rclpy #1671</strong> — Humble 콜백 shutdown 교착의 원인을 다시 추적해, #1492의 변경을 되돌리고 upstream 수정(#947)을 그대로 backport하는 정정 PR. Humble의 <code>executor.py</code>와 테스트를 rolling과 같은 구현으로 맞추고, 테스트 이름에 <code>test_</code> 접두어를 붙여 pytest가 실제로 수집하도록 했다. 메인테이너 승인과 CI 통과를 마치고 머지를 앞두고 있다.<br>
+                    <a href="https://github.com/ros2/rclpy/pull/1671" target="_blank" rel="noopener noreferrer">github.com/ros2/rclpy/pull/1671</a>
                 </li>
             </ul>
         </section>

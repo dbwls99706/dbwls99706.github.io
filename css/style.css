@@ -267,6 +267,13 @@ button:focus-visible {
     line-height: 1.7;
 }
 
+.hero-motto {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
 .hero-links {
     margin-top: 1.25rem;
     display: flex;
@@ -320,6 +327,10 @@ button:focus-visible {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1rem;
     perspective: 1000px;
+}
+
+.experience-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr));
 }
 
 .project-card {
@@ -395,6 +406,44 @@ button:focus-visible {
     flex: 1;
     margin-bottom: 1rem;
     line-height: 1.6;
+}
+
+.project-card .card-period {
+    flex: none;
+    margin-bottom: 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+}
+
+.card-points {
+    list-style: none;
+    flex: 1;
+    display: grid;
+    align-content: start;
+    gap: 0.375rem;
+    margin: 0 0 1rem;
+    padding: 0;
+}
+
+.card-points li {
+    position: relative;
+    padding-left: 0.875rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.card-points li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.68em;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
 }
 
 .project-meta {
@@ -532,6 +581,15 @@ button:focus-visible {
     border-radius: 50%;
     background: var(--accent);
     opacity: 0.5;
+}
+
+.section code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.875em;
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
 }
 
 /* Tech Stack Table */
@@ -741,6 +799,7 @@ button:focus-visible {
 /* ===== Card Inner 3D Depth ===== */
 .project-card h3,
 .project-card p,
+.project-card .card-points,
 .project-card .project-meta {
     position: relative;
     z-index: 1;
