@@ -700,7 +700,12 @@ svg { display: block; }
     margin-right: 0.875rem;
     border-radius: 11px;
     vertical-align: middle;
-    background: #fff;
+}
+.row:not(.is-lead) .row-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    margin-right: 0.75rem;
 }
 
 .row-desc {
