@@ -102,13 +102,17 @@ export function createPhysics({ rects, cols, rows, cell, robot }) {
     const cone = (x, z) => addProp('cone', new Cylinder(0.03, 0.13, 0.36, 10), 0.6, x, 0.18, z, [0.03, 0.13, 0.36]);
     const drum = (x, z) => addProp('drum', new Cylinder(0.15, 0.15, 0.44, 12), 2.6, x, 0.22, z, [0.15, 0.15, 0.44]);
 
+    // Props stand beside walls, racks and pillars, the way a real floor is kept, so there is always room to go around.
     const d = BOX / cell;                                  // crate size in cells
-    for (const [cx, cz] of [[38.5, 17.5], [24, 24.5]]) {  // two small pyramids
+    for (const [cx, cz] of [[36.6, 25.5], [20, 26.2]]) {  // two small pyramids
         crate(cx, 0, cz - d * 0.52); crate(cx, 0, cz + d * 0.52); crate(cx, 1, cz);
     }
-    crate(47, 0, 27); crate(47, 1, 27); crate(47, 2, 27);  // a tower
-    for (let k = 0; k < 4; k++) cone(44 + k * 3.2, 15.5);
-    drum(56.5, 28); drum(45, 34.5); drum(30.5, 31.5);
+    crate(53.6, 0, 30.9); crate(53.6, 1, 30.9); crate(53.6, 2, 30.9);       // a tower by a pillar
+    for (let k = 0; k < 4; k++) cone(46 + k * 3.2, 13.6);                    // cones along the conveyor
+    drum(57.5, 36.4); drum(36.6, 41.5); drum(31.9, 30);
+
+    // stacks start at rest, so nothing creeps before the robot or the visitor touches it
+    for (const { body } of props) body.sleep();
 
     // ----- stepping -----
     let acc = 0;
