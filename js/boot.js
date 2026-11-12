@@ -3,12 +3,10 @@
     'use strict';
     var root = document.documentElement;
 
+    // Dark is the default; light applies only once the visitor has picked it with the toggle.
     var theme = null;
-    try { theme = localStorage.getItem('theme'); } catch (e) { /* storage unavailable */ }
-    if (theme !== 'light' && theme !== 'dark') {
-        theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-    }
-    root.dataset.theme = theme;
+    try { theme = localStorage.getItem('theme-choice'); } catch (e) { /* storage unavailable */ }
+    root.dataset.theme = theme === 'light' ? 'light' : 'dark';
 
     // Intro states are only hidden when motion will actually run.
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
