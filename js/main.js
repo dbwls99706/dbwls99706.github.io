@@ -5,19 +5,22 @@
     var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // ===== Theme Toggle =====
-    function applyTheme(theme) {
+    // `remember` is set only when the visitor presses the toggle, so the default stays dark for everyone else.
+    function applyTheme(theme, remember) {
         root.dataset.theme = theme;
-        try { localStorage.setItem('theme', theme); } catch (e) { /* storage unavailable */ }
+        if (remember) {
+            try { localStorage.setItem('theme-choice', theme); } catch (e) { /* storage unavailable */ }
+        }
         var meta = document.querySelector('meta[name="theme-color"]');
         if (meta) meta.content = theme === 'light' ? '#eceef1' : '#0b0d10';
     }
-    applyTheme(root.dataset.theme === 'light' ? 'light' : 'dark');
+    applyTheme(root.dataset.theme === 'light' ? 'light' : 'dark', false);
 
     document.querySelectorAll('.theme-toggle').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var next = root.dataset.theme === 'dark' ? 'light' : 'dark';
             if (!document.startViewTransition || reducedMotion) {
-                applyTheme(next);
+                applyTheme(next, true);
                 return;
             }
             // The new theme spreads out from the button that was pressed.
@@ -26,7 +29,7 @@
             var y = rect.top + rect.height / 2;
             var radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
             root.classList.add('theme-switching');
-            var transition = document.startViewTransition(function () { applyTheme(next); });
+            var transition = document.startViewTransition(function () { applyTheme(next, true); });
             transition.ready.then(function () {
                 root.animate(
                     { clipPath: ['circle(0px at ' + x + 'px ' + y + 'px)', 'circle(' + radius + 'px at ' + x + 'px ' + y + 'px)'] },
