@@ -161,7 +161,11 @@
         var img = preview && preview.querySelector('img');
         var rows = gsap.utils.toArray('.row[data-preview]');
         if (preview && img && rows.length) {
-            var thumb = function (id) { return 'https://i.ytimg.com/vi/' + id + '/mqdefault.jpg'; };
+            // vertical videos get a portrait frame, cropped from the taller still so no black bars show
+            var thumb = function (row) {
+                var portrait = row.dataset.previewShape === 'portrait';
+                return 'https://i.ytimg.com/vi/' + row.dataset.preview + (portrait ? '/hqdefault.jpg' : '/mqdefault.jpg');
+            };
             var xTo = gsap.quickTo(preview, 'x', { duration: 0.5, ease: 'power3' });
             var yTo = gsap.quickTo(preview, 'y', { duration: 0.5, ease: 'power3' });
             var place = function (e, snap) {
@@ -172,15 +176,16 @@
                 if (snap) gsap.set(preview, { x: x, y: y });
                 else { xTo(x); yTo(y); }
             };
-            var warm = function () { rows.forEach(function (row) { new Image().src = thumb(row.dataset.preview); }); };
+            var warm = function () { rows.forEach(function (row) { new Image().src = thumb(row); }); };
             if ('requestIdleCallback' in window) window.requestIdleCallback(warm, { timeout: 4000 });
             else setTimeout(warm, 2500);
 
             on(img, 'error', function () { preview.classList.remove('is-on'); });
             rows.forEach(function (row) {
                 on(row, 'mouseenter', function (e) {
-                    var src = thumb(row.dataset.preview);
+                    var src = thumb(row);
                     if (img.getAttribute('src') !== src) img.src = src;
+                    preview.classList.toggle('is-portrait', row.dataset.previewShape === 'portrait');
                     place(e, !preview.classList.contains('is-on'));
                     preview.classList.add('is-on');
                 });
