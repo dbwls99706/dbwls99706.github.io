@@ -12,9 +12,12 @@
     <meta property="og:locale" content="ko_KR">
     <meta name="twitter:card" content="summary">
     <link rel="icon" type="image/png" href="../One%20Page%20Today.png">
+    <meta name="theme-color" content="#0b0d10">
+    <style>@view-transition { navigation: auto; } @media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }</style>
+    <script src="../js/boot.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
@@ -23,7 +26,7 @@
 
     <header class="site-header">
         <div class="header-inner">
-            <a href="/" class="site-title">Yujin Hong</a>
+            <a href="/" class="site-title" aria-label="Yujin Hong"><span class="title-full">Yujin Hong</span><span class="title-short" aria-hidden="true">YH</span></a>
             <nav class="site-nav" aria-label="메인 네비게이션">
                 <a href="/">Projects</a>
                 <div class="nav-social">
@@ -41,7 +44,7 @@
         </div>
     </header>
     <main id="main" class="container">
-        <a href="/" class="back-link">&larr; Projects</a>
+        <a href="/" class="back-link"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></svg>Projects</a>
         <section class="project-hero">
             <h1>Robotics Control</h1>
             <p class="desc">다자유도 로봇 시스템의 동역학 모델링, PID 제어, 파라미터 추정을 MATLAB으로 구현한 5개 과제 모음.</p>
@@ -119,6 +122,10 @@
         <p><a href="../privacy-policy.html">개인정보처리방침</a> &middot; &copy; 2026 Yujin Hong</p>
     </footer>
 
+    <script src="../vendor/gsap.min.js" defer></script>
+    <script src="../vendor/ScrollTrigger.min.js" defer></script>
+    <script src="../vendor/SplitText.min.js" defer></script>
     <script src="../js/main.js" defer></script>
+    <script src="../js/motion.js" defer></script>
 </body>
 </html>
