@@ -126,8 +126,8 @@ function start() {
             const ci = n % W, cj = (n / W) | 0;
             for (let k = 0; k < 8; k++) {
                 const ni = ci + NB[k][0], nj = cj + NB[k][1];
-                if (!inside(ni, nj) || blocked[idx(ni, nj)]) continue;
-                if (k > 3 && (blocked[idx(ci + NB[k][0], cj)] || blocked[idx(ci, cj + NB[k][1])])) continue;
+                if (!inside(ni, nj) || shut(idx(ni, nj))) continue;
+                if (k > 3 && (shut(idx(ci + NB[k][0], cj)) || shut(idx(ci, cj + NB[k][1])))) continue;
                 const m = idx(ni, nj), t = gScore[n] + NB[k][2];
                 if (t < gScore[m]) { gScore[m] = t; cameFrom[m] = n; push(t + h(ni, nj), m); }
             }
@@ -143,15 +143,43 @@ function start() {
         const n = Math.ceil(Math.hypot(dx, dz) / 0.25);
         for (let k = 0; k <= n; k++) {
             const [i, j] = cellOf(a[0] + dx * k / n, a[1] + dz * k / n);
-            if (!inside(i, j) || blocked[idx(i, j)]) return false;
+            if (!inside(i, j) || shut(idx(i, j))) return false;
         }
         return true;
     }
 
     const STEP = 0.25;
-    function plan(from, goalCell) {
+    // Dynamic costmap layer: loose props the LiDAR has detected, inflated by the robot's footprint.
+    const dyn = new Uint8Array(W * H);
+    let avoiding = true;
+    const shut = (n) => blocked[n] || (avoiding && dyn[n]);
+
+    // Routes go around detected props. Only `escape` (the robot is boxed in) may plan straight through them.
+    function plan(from, goalCell, escape) {
+        avoiding = true;
+        let p = route(from, goalCell);
+        if (!p && escape) {
+            avoiding = false;
+            p = route(from, goalCell);
+            avoiding = true;
+            if (p) p.escape = true;
+        }
+        return p;
+    }
+
+    // straight line between two points without crossing a wall
+    function inSight(ax, az, bx, bz) {
+        const n = Math.ceil(Math.hypot(bx - ax, bz - az) / 0.3);
+        for (let k = 1; k < n; k++) {
+            const [i, j] = cellOf(ax + (bx - ax) * k / n, az + (bz - az) * k / n);
+            if (occ(i, j)) return false;
+        }
+        return true;
+    }
+
+    function route(from, goalCell) {
         let [si, sj] = cellOf(from[0], from[1]);
-        if (blocked[idx(si, sj)]) { const n = nearestFree(si, sj); if (!n) return null; [si, sj] = n; }
+        if (shut(idx(si, sj))) { const n = nearestFree(si, sj, from); if (!n) return null; [si, sj] = n; }
         const cells = astar(si, sj, goalCell[0], goalCell[1]);
         if (!cells) return null;
         cells[0] = [from[0], from[1]];
@@ -191,13 +219,15 @@ function start() {
         return out.length > 1 ? out : null;
     }
 
-    function nearestFree(i, j) {
+    // nearest plannable cell; with `from`, only cells the robot can walk straight to (never one behind a wall)
+    function nearestFree(i, j, from) {
         for (let r = 0; r <= 8; r++) {
             let best = null, bd = Infinity;
             for (let dj = -r; dj <= r; dj++) for (let di = -r; di <= r; di++) {
                 if (Math.max(Math.abs(di), Math.abs(dj)) !== r) continue;
                 const ni = i + di, nj = j + dj;
-                if (!inside(ni, nj) || blocked[idx(ni, nj)]) continue;
+                if (!inside(ni, nj) || shut(idx(ni, nj))) continue;
+                if (from && !inSight(from[0], from[1], wx(ni) + 0.5, wz(nj) + 0.5)) continue;
                 const d = di * di + dj * dj;
                 if (d < bd) { bd = d; best = [ni, nj]; }
             }
@@ -527,6 +557,47 @@ function start() {
         mesh.setParent(scene);
         return mesh;
     });
+    // Where the props are right now, as the LiDAR meets them (propAt, propTop), and which ones it has detected.
+    const PROP_RADIUS = { crate: 0.22, cone: 0.15, drum: 0.2 };          // metres
+    const NOSE = 0.33, HALF_WIDTH = 0.19;                                  // robot outline from its centre, metres
+    const propAt = new Int16Array(W * H), propTop = new Float32Array(W * H);
+    const detected = new Uint8Array(physics.props.length);
+    function stamp(x, z, r, mark) {
+        for (let j = Math.floor(z - r + H / 2); j <= Math.floor(z + r + H / 2); j++) {
+            for (let i = Math.floor(x - r + W / 2); i <= Math.floor(x + r + W / 2); i++) {
+                if (inside(i, j) && Math.hypot(i + 0.5 - W / 2 - x, j + 0.5 - H / 2 - z) <= r + 0.5) mark(idx(i, j));
+            }
+        }
+    }
+    function locateProps() {
+        propAt.fill(0);
+        physics.props.forEach(({ kind, body, size }, i) => {
+            const top = (body.position.y + size[size.length - 1] / 2) / CELL_M;
+            stamp(body.position.x / CELL_M, body.position.z / CELL_M, PROP_RADIUS[kind] / CELL_M - 0.5, (n) => { propAt[n] = i + 1; propTop[n] = top; });
+        });
+    }
+    // A loose object right in front of the nose (the bumper zone); anything this close also counts as detected.
+    function propAhead() {
+        let hit = false;
+        physics.props.forEach(({ kind, body }, i) => {
+            const dx = body.position.x - bot.x * CELL_M, dz = body.position.z - bot.z * CELL_M;
+            const gap = Math.hypot(dx, dz) - PROP_RADIUS[kind];
+            if (gap > 1.2) return;
+            detected[i] = 1;
+            // in the robot's frame: just ahead of the nose and within its own width
+            const c = Math.cos(bot.yaw), sn = Math.sin(bot.yaw);
+            const ahead = dx * c + dz * sn, side = Math.abs(dz * c - dx * sn);
+            if (ahead > 0 && ahead < NOSE + PROP_RADIUS[kind] + 0.12 && side < HALF_WIDTH + PROP_RADIUS[kind] + 0.02) hit = true;
+        });
+        return hit;
+    }
+    function updateCostmap() {
+        dyn.fill(0);
+        physics.props.forEach(({ kind, body }, i) => {
+            if (detected[i]) stamp(body.position.x / CELL_M, body.position.z / CELL_M, PROP_RADIUS[kind] / CELL_M + 0.8, (n) => { dyn[n] = 1; });
+        });
+    }
+
     // props belong to the map too: each one fades in as the LiDAR first sees the floor it stands on
     const propSeen = (body) => {
         const [ci, cj] = cellOf(body.position.x / CELL_M, body.position.z / CELL_M);
@@ -575,13 +646,16 @@ function start() {
     // the robot's pose in cells, read back from the physics body every step
     const bot = { x: wx(31) + 0.5, z: wz(24) + 0.5, yaw: 0.4, speed: 0 };
     physics.place(bot.x * CELL_M, bot.z * CELL_M, bot.yaw);
-    let path = null, pathIndex = 0, travel = 0, stall = 0, pathLen = 0, pathAlpha = 0;
+    let path = null, pathIndex = 0, travel = 0, stall = 0, pathLen = 0, pathAlpha = 0, recheck = 0;
+    let backing = 0, retries = 0, lost = 0;         // recovery: back away from an obstacle, bounded retries, time without any route
     const drive = { keys: new Set(), stick: null };     // manual control: W A S D, or the on-screen stick
     let mode = 'exploring', modeShown = '', idle = 0, userGoal = false;
     let sweep = 0, time = 0, dirty = true, pingT = 1, goalAlpha = 0;
     const pointer = { x: 0, z: 0, on: false, alpha: 0, nx: 0, ny: 0 };
 
-    function setPath(p, byUser) {
+    function setPath(p, byUser, rerouted) {
+        if (!rerouted) retries = 0;
+        lost = 0;
         path = p; pathIndex = 0; travel = 0; stall = 0; pathLen = (p.length - 1) * STEP; userGoal = byUser;
         const n = Math.min(p.length, MAXP);
         for (let k = 0; k < n; k++) {
@@ -598,17 +672,18 @@ function start() {
         pathProgram.uniforms.uLength.value = pathLen;
         const end = p[p.length - 1];
         goal.position.x = ping.position.x = end[0]; goal.position.z = ping.position.z = end[1];
-        if (byUser) pingT = 0;
+        if (byUser && !rerouted) pingT = 0;
         mode = byUser ? 'navigating' : (seenCount / observableCount > 0.97 ? 'patrolling' : 'exploring');
     }
 
     function autoGoal() {
+        updateCostmap();
         let best = null, bestScore = -Infinity;
         for (let k = 0; k < 36; k++) {
             const c = freeCells[(Math.random() * freeCells.length) | 0];
             const dx = wx(c[0]) + 0.5 - bot.x, dz = wz(c[1]) + 0.5 - bot.z;
             const dist = Math.hypot(dx, dz);
-            if (dist < 8) continue;
+            if (dist < 8 || dyn[idx(c[0], c[1])]) continue;
             let unknown = 0;
             for (let dj = -3; dj <= 3; dj += 3) for (let di = -3; di <= 3; di += 3) {
                 const i = c[0] + di, j = c[1] + dj;
@@ -618,7 +693,8 @@ function start() {
             if (score > bestScore) { bestScore = score; best = c; }
         }
         if (!best) return;
-        const p = plan([bot.x, bot.z], best);
+        // boxed in for a while: allow one route straight through the clutter to get out
+        const p = plan([bot.x, bot.z], best, lost > 6);
         if (p) setPath(p, false);
     }
 
@@ -631,6 +707,7 @@ function start() {
             const n = idx(i, j);
             if (mark && !seenTarget[n]) { seenTarget[n] = 1; if (observable[n]) seenCount++; }
             if (height[n] > 0) return [t, height[n]];
+            if (propAt[n]) { if (mark) detected[propAt[n] - 1] = 1; return [t, propTop[n]]; }
         }
         return [RANGE, -1];
     }
@@ -726,9 +803,37 @@ function start() {
 
         // command the robot: manual control wins, otherwise it follows the planned path
         const cmd = physics.command, manual = manualInput();
+        locateProps();
+        const bumper = propAhead();
+        const reroute = () => {
+            const end = path[path.length - 1];
+            updateCostmap();
+            const next = plan([bot.x, bot.z], cellOf(end[0], end[1]));
+            if (next) setPath(next, userGoal, true);
+            else { path = null; idle = 0; if (userGoal) mode = 'no path'; }
+        };
+        if (path && !manual && backing <= 0 && !path.escape) {
+            // costmap update: if a prop the LiDAR has picked up sits on the route ahead, plan around it
+            recheck += dt;
+            if (recheck > 0.25) {
+                recheck = 0;
+                updateCostmap();
+                let obstructed = false;
+                for (let k = pathIndex + 4; k < path.length && !obstructed; k += 2) {
+                    const [ci, cj] = cellOf(path[k][0], path[k][1]);
+                    obstructed = dyn[idx(ci, cj)] === 1;
+                }
+                if (obstructed) reroute();
+            }
+        }
         if (manual) {
-            path = null; userGoal = true; idle = 0; mode = 'manual';
+            path = null; userGoal = true; idle = 0; backing = 0; mode = 'manual';
             cmd.v = manual.v * 1.15; cmd.w = manual.w * 2.4;
+        } else if (path && backing > 0) {
+            // recovery: back straight out, then plan again from where there is room
+            backing -= dt;
+            cmd.v = -0.45; cmd.w = 0;
+            if (backing <= 0) reroute();
         } else if (path) {
             // pure pursuit: steer at a point a little way along the path
             const n = path.length, far = (k) => Math.hypot(path[k][0] - bot.x, path[k][1] - bot.z);
@@ -740,15 +845,19 @@ function start() {
             err = Math.atan2(Math.sin(err), Math.cos(err));
             cmd.w = Math.max(-2.6, Math.min(2.6, -4 * err));
             cmd.v = 1.05 * Math.max(0.12, 1 - Math.abs(err) / 1.1) * Math.min(1, 0.3 + remaining / 3);
-            // something wedged in the way: give up on this route rather than push forever
             stall = pathIndex > before || bot.speed > 0.25 ? 0 : stall + dt;
-            if (remaining < 0.7 || pathIndex >= n - 1 || stall > 3) {
-                if (userGoal) mode = stall > 3 ? 'blocked' : 'goal reached';
+            if (remaining < 0.7 || pathIndex >= n - 1) {
+                if (userGoal) mode = 'goal reached';
                 path = null; idle = 0; cmd.v = 0; cmd.w = 0;
+            } else if ((bumper && !path.escape) || stall > 1.5) {
+                // never shove an obstacle along: stop, and back off to replan (a few times at most)
+                cmd.v = 0; cmd.w = 0; stall = 0;
+                if (++retries > 3) { path = null; idle = 0; if (userGoal) mode = 'blocked'; }
+                else backing = 0.9;
             }
         } else {
             cmd.v = 0; cmd.w = 0;
-            idle += dt;
+            idle += dt; lost += dt;
             if (idle > (userGoal ? 2.4 : 0.5)) autoGoal();
         }
         physics.step(dt);
@@ -869,11 +978,14 @@ function start() {
         if (!p) return;
         let [i, j] = cellOf(p[0], p[1]);
         if (!inside(i, j)) return;
-        if (blocked[idx(i, j)]) { const n = nearestFree(i, j); if (!n) return; [i, j] = n; }
-        const route = plan([bot.x, bot.z], [i, j]);
-        if (!route) return;
-        setPath(route, true);
+        updateCostmap();
+        if (shut(idx(i, j))) { const n = nearestFree(i, j); if (!n) return; [i, j] = n; }
+        const found = plan([bot.x, bot.z], [i, j]);
         if (hint) hint.classList.add('is-used');
+        if (found) { setPath(found, true); return; }
+        // nothing gets there without pushing things over: say so and stay put
+        path = null; userGoal = true; idle = 0; mode = 'no path';
+        ping.position.x = wx(i) + 0.5; ping.position.z = wz(j) + 0.5; pingT = 0;
     });
     canvas.addEventListener('pointermove', (e) => {
         const b = canvas.getBoundingClientRect();
