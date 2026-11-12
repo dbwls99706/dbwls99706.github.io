@@ -31,7 +31,7 @@
     function titleFor(pathname) {
         var links = document.querySelectorAll('.row-link');
         for (var i = 0; i < links.length; i++) {
-            if (path(links[i].href) === pathname) return links[i].querySelector('.row-title');
+            if (path(links[i].href) === pathname) return links[i].closest('.row-title');
         }
         return null;
     }
