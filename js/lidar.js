@@ -1,7 +1,9 @@
 // Hero scene: a quadruped maps a factory floor with a spinning LiDAR.
-// The occupancy grid, ray casting, costmap inflation and A* planner are real;
-// click the floor to send a navigation goal.
+// The occupancy grid, ray casting, costmap inflation and A* planner are real, and the robot is a
+// physical body: click the floor to send a navigation goal, or drive it yourself and knock things over.
 import { Renderer, Camera, Transform, Program, Geometry, Mesh, Texture } from '../vendor/ogl.min.js';
+import { createPhysics } from './physics.js';
+import { createRobot, KIN } from './robot.js';
 
 const canvas = document.getElementById('lidar');
 const hero = canvas && canvas.closest('.hero');
@@ -21,7 +23,7 @@ function start() {
 
     // ---------- World ----------
     const W = 76, H = 48;
-    const CELL_M = 0.25;            // metres per cell, used for the pose readout
+    const CELL_M = 0.2;             // metres per cell: sets the robot's scale and the pose readout
     const RANGE = 17;               // LiDAR range in cells
     const MAX_H = 5;
 
@@ -29,7 +31,9 @@ function start() {
     const idx = (i, j) => j * W + i;
     const inside = (i, j) => i >= 0 && j >= 0 && i < W && j < H;
 
+    const rects = [];
     function rect(x, y, w, h, hgt) {
+        rects.push([x, y, w, h, hgt]);
         for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) if (inside(i, j)) height[idx(i, j)] = hgt;
     }
 
@@ -219,11 +223,11 @@ function start() {
     const THEMES = {
         dark: {
             bg: '#0b0d10', low: '#2c62f2', high: '#74ecdf', hot: '#f3fbff', floor: '#33507f', grid: '#8aa0c0',
-            beam: '#9fe8ff', accent: '#ffb224', body: '#ffb224', leg: '#dfe4ea', additive: true,
+            beam: '#9fe8ff', accent: '#ffb224', crate: '#b98d5b', cone: '#ff7a1a', drum: '#4f6f96', additive: true,
         },
         light: {
             bg: '#eceef1', low: '#16233d', high: '#0d6672', hot: '#a85200', floor: '#8793a3', grid: '#5d6672',
-            beam: '#0d6672', accent: '#a85200', body: '#c26400', leg: '#161b24', additive: false,
+            beam: '#0d6672', accent: '#a85200', crate: '#b08453', cone: '#f06a0c', drum: '#48658a', additive: false,
         },
     };
 
@@ -348,10 +352,10 @@ function start() {
         }`;
     const FLAT_FS = `
         precision highp float;
-        uniform vec3 uColor;
-        uniform float uOpacity;
+        uniform vec3 uColor, uBackdrop;
+        uniform float uOpacity, uReveal;
         varying float vLight;
-        void main() { gl_FragColor = vec4(uColor * vLight, uOpacity); }`;
+        void main() { gl_FragColor = vec4(mix(uBackdrop, uColor * vLight, uReveal), uOpacity); }`;
     const LINE_VS = `
         attribute vec3 position;
         attribute float aAlpha;
@@ -367,7 +371,7 @@ function start() {
         void main() { gl_FragColor = vec4(uColor, vAlpha * uOpacity); }`;
     const flatProgram = (opts = {}) => new Program(gl, {
         vertex: FLAT_VS, fragment: FLAT_FS, cullFace: false,
-        uniforms: { uColor: { value: [1, 1, 1] }, uOpacity: { value: 1 } }, ...opts,
+        uniforms: { uColor: { value: [1, 1, 1] }, uOpacity: { value: 1 }, uBackdrop: { value: [0, 0, 0] }, uReveal: { value: 1 } }, ...opts,
     });
     const lineProgram = () => new Program(gl, {
         vertex: LINE_VS, fragment: LINE_FS, transparent: true, depthWrite: false,
@@ -475,80 +479,70 @@ function start() {
     pool.position.y = 0.02;
     pool.setParent(scene);
 
-    // ---------- Robot ----------
-    function boxes(list) {
+    // ---------- Robot, physics and loose props ----------
+    const robot = createRobot(gl, scene, CELL_M);
+    const physics = createPhysics({ rects, cols: W, rows: H, cell: CELL_M, robot: KIN });
+
+    function boxGeometry(sx, sy, sz) {
         const p = [], n = [], ix = [];
-        for (const [cx, cy, cz, sx, sy, sz] of list) {
-            const x0 = cx - sx / 2, x1 = cx + sx / 2, y0 = cy - sy / 2, y1 = cy + sy / 2, z0 = cz - sz / 2, z1 = cz + sz / 2;
-            const faces = [
-                [[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1], [1, 0, 0]],
-                [[x0, y0, z1], [x0, y1, z1], [x0, y1, z0], [x0, y0, z0], [-1, 0, 0]],
-                [[x0, y1, z0], [x0, y1, z1], [x1, y1, z1], [x1, y1, z0], [0, 1, 0]],
-                [[x0, y0, z1], [x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [0, -1, 0]],
-                [[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1], [0, 0, 1]],
-                [[x1, y0, z0], [x0, y0, z0], [x0, y1, z0], [x1, y1, z0], [0, 0, -1]],
-            ];
-            for (const f of faces) {
-                const b = p.length / 3;
-                for (let k = 0; k < 4; k++) { p.push(...f[k]); n.push(...f[4]); }
-                ix.push(b, b + 1, b + 2, b, b + 2, b + 3);
+        for (const f of [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]]) {
+            const u = f[0] ? [0, 1, 0] : [1, 0, 0];
+            const v = [f[1] * u[2] - f[2] * u[1], f[2] * u[0] - f[0] * u[2], f[0] * u[1] - f[1] * u[0]];
+            const b = p.length / 3;
+            for (const [a, d] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+                p.push((f[0] + a * u[0] + d * v[0]) * sx / 2, (f[1] + a * u[1] + d * v[1]) * sy / 2, (f[2] + a * u[2] + d * v[2]) * sz / 2);
+                n.push(...f);
+            }
+            ix.push(b, b + 1, b + 2, b, b + 2, b + 3);
+        }
+        return new Geometry(gl, { position: { size: 3, data: new Float32Array(p) }, normal: { size: 3, data: new Float32Array(n) }, index: { data: new Uint16Array(ix) } });
+    }
+    function cylinderGeometry(rTop, rBottom, h, seg = 20) {
+        const p = [], n = [], ix = [];
+        const slope = (rBottom - rTop) / h, nl = Math.hypot(1, slope);
+        for (let k = 0; k <= seg; k++) {
+            const a = k / seg * Math.PI * 2, c = Math.cos(a), s = Math.sin(a);
+            p.push(c * rTop, h / 2, s * rTop, c * rBottom, -h / 2, s * rBottom);
+            n.push(c / nl, slope / nl, s / nl, c / nl, slope / nl, s / nl);
+            if (k < seg) ix.push(k * 2, k * 2 + 1, k * 2 + 2, k * 2 + 1, k * 2 + 3, k * 2 + 2);
+        }
+        for (const [r, y] of [[rTop, h / 2], [rBottom, -h / 2]]) {
+            const centre = p.length / 3;
+            p.push(0, y, 0); n.push(0, Math.sign(y), 0);
+            for (let k = 0; k <= seg; k++) {
+                const a = k / seg * Math.PI * 2;
+                p.push(Math.cos(a) * r, y, Math.sin(a) * r); n.push(0, Math.sign(y), 0);
+                if (k < seg) ix.push(centre, centre + 1 + k, centre + 2 + k);
             }
         }
-        return new Geometry(gl, {
-            position: { size: 3, data: new Float32Array(p) }, normal: { size: 3, data: new Float32Array(n) }, index: { data: new Uint16Array(ix) },
+        return new Geometry(gl, { position: { size: 3, data: new Float32Array(p) }, normal: { size: 3, data: new Float32Array(n) }, index: { data: new Uint16Array(ix) } });
+    }
+    const propPrograms = { crate: flatProgram(), cone: flatProgram(), drum: flatProgram() };
+    const propMeshes = physics.props.map(({ kind, size }) => {
+        const mesh = new Mesh(gl, {
+            geometry: kind === 'crate' ? boxGeometry(...size) : cylinderGeometry(...size),
+            program: propPrograms[kind], frustumCulled: false,
         });
-    }
-    const robot = new Transform();
-    robot.setParent(scene);
-    const bodyProgram = flatProgram(), headProgram = flatProgram(), legProgram = flatProgram();
-    const HIP_Y = 1.12, L1 = 0.7, L2 = 0.7;
-    const body = new Mesh(gl, { geometry: boxes([[0, 1.3, 0, 2.3, 0.44, 0.92]]), program: bodyProgram, frustumCulled: false });
-    const head = new Mesh(gl, {
-        geometry: boxes([[1.32, 1.38, 0, 0.5, 0.36, 0.62], [0.55, 1.66, 0, 0.34, 0.28, 0.34]]),
-        program: headProgram, frustumCulled: false,
+        mesh.scale.set(1 / CELL_M);
+        mesh.setParent(scene);
+        return mesh;
     });
-    body.setParent(robot); head.setParent(robot);
-
-    const HIPS = [[0.86, 0.52, 0], [0.86, -0.52, 0.5], [-0.86, 0.52, 0.5], [-0.86, -0.52, 0]];   // x, z, gait phase offset
-    const SEG = 8, T = 0.075;
-    const legPos = new Float32Array(SEG * 8 * 3), legNormal = new Float32Array(SEG * 8 * 3).fill(0), legIndex = new Uint16Array(SEG * 36);
-    for (let k = 1; k < legNormal.length; k += 3) legNormal[k] = 1;
-    {
-        const q = [[0, 1, 3, 0, 3, 2], [4, 6, 7, 4, 7, 5], [0, 4, 5, 0, 5, 1], [2, 3, 7, 2, 7, 6], [0, 2, 6, 0, 6, 4], [1, 5, 7, 1, 7, 3]];
-        for (let s = 0; s < SEG; s++) for (let f = 0; f < 6; f++) for (let k = 0; k < 6; k++) legIndex[s * 36 + f * 6 + k] = s * 8 + q[f][k];
-    }
-    const legGeo = new Geometry(gl, {
-        position: { size: 3, data: legPos, usage: gl.DYNAMIC_DRAW }, normal: { size: 3, data: legNormal }, index: { data: legIndex },
+    // props belong to the map too: each one fades in as the LiDAR first sees the floor it stands on
+    const propSeen = (body) => {
+        const [ci, cj] = cellOf(body.position.x / CELL_M, body.position.z / CELL_M);
+        return inside(ci, cj) ? seen[idx(ci, cj)] : 0;
+    };
+    propMeshes.forEach((mesh, i) => {
+        const { kind, body } = physics.props[i];
+        mesh.onBeforeRender(() => { propPrograms[kind].uniforms.uReveal.value = propSeen(body); });
     });
-    const legs = new Mesh(gl, { geometry: legGeo, program: legProgram, frustumCulled: false });
-    legs.setParent(robot);
-
-    function segment(s, ax, ay, bx, by, z) {
-        let nx = -(by - ay), ny = bx - ax;
-        const l = Math.hypot(nx, ny) || 1; nx = nx / l * T; ny = ny / l * T;
-        const o = s * 24;
-        const put = (k, x, y, zz) => { legPos[o + k * 3] = x; legPos[o + k * 3 + 1] = y; legPos[o + k * 3 + 2] = zz; };
-        put(0, ax + nx, ay + ny, z - T); put(1, ax + nx, ay + ny, z + T); put(2, ax - nx, ay - ny, z - T); put(3, ax - nx, ay - ny, z + T);
-        put(4, bx + nx, by + ny, z - T); put(5, bx + nx, by + ny, z + T); put(6, bx - nx, by - ny, z - T); put(7, bx - nx, by - ny, z + T);
-    }
-    function poseLegs(phase, walk) {
-        const stride = 0.95 * walk, lift = 0.34 * walk;
-        for (let k = 0; k < 4; k++) {
-            const [hx, hz, off] = HIPS[k];
-            const t = (phase + off) % 1;
-            let fx, fy = 0;
-            if (t < 0.5) fx = stride / 2 - (t / 0.5) * stride;
-            else { const u = (t - 0.5) / 0.5; fx = -stride / 2 + (u * u * (3 - 2 * u)) * stride; fy = lift * Math.sin(Math.PI * u); }
-            // two-link inverse kinematics in the leg's sagittal plane
-            const dx = fx, dy = fy - HIP_Y;
-            const d = Math.min(Math.hypot(dx, dy), L1 + L2 - 0.001);
-            const a = Math.atan2(dy, dx);
-            const A = Math.acos((L1 * L1 + d * d - L2 * L2) / (2 * L1 * d));
-            const kx = hx + L1 * Math.cos(a - A), ky = HIP_Y + L1 * Math.sin(a - A);
-            segment(k * 2, hx, HIP_Y, kx, ky, hz);
-            segment(k * 2 + 1, kx, ky, hx + fx, fy + 0.02, hz);
-        }
-        legGeo.attributes.position.needsUpdate = true;
+    function syncProps() {
+        physics.props.forEach(({ body }, i) => {
+            const m = propMeshes[i], q = body.quaternion;
+            m.position.set(body.position.x / CELL_M, body.position.y / CELL_M, body.position.z / CELL_M);
+            m.quaternion.set(q.x, q.y, q.z, q.w);
+            m.visible = propSeen(body) > 0.01;
+        });
     }
 
     // ---------- Theme ----------
@@ -565,9 +559,11 @@ function start() {
         beamProgram.uniforms.uOpacity.value = t.additive ? 0.5 : 0.55;
         for (const p of [pathProgram, goalProgram, pingProgram, reticleProgram, poolProgram]) p.uniforms.uColor.value = hex(t.accent);
         poolProgram.uniforms.uOpacity.value = t.additive ? 0.28 : 0.2;
-        bodyProgram.uniforms.uColor.value = hex(t.body);
-        headProgram.uniforms.uColor.value = hex(t.leg);
-        legProgram.uniforms.uColor.value = hex(t.leg);
+        robot.setTheme(t.additive);
+        for (const kind of ['crate', 'cone', 'drum']) {
+            propPrograms[kind].uniforms.uColor.value = hex(t[kind]);
+            propPrograms[kind].uniforms.uBackdrop.value = bg;
+        }
         dirty = true;
     }
 
@@ -576,14 +572,17 @@ function start() {
     hero.querySelectorAll('[data-hud]').forEach((el) => { HUD[el.dataset.hud] = el; });
     const hint = hero.querySelector('.hero-hint');
 
-    const bot = { x: wx(31) + 0.5, z: wz(24) + 0.5, yaw: 0.4, walk: 0, phase: 0 };
-    let path = null, travel = 0, pathLen = 0, pathAlpha = 0;
+    // the robot's pose in cells, read back from the physics body every step
+    const bot = { x: wx(31) + 0.5, z: wz(24) + 0.5, yaw: 0.4, speed: 0 };
+    physics.place(bot.x * CELL_M, bot.z * CELL_M, bot.yaw);
+    let path = null, pathIndex = 0, travel = 0, stall = 0, pathLen = 0, pathAlpha = 0;
+    const drive = { keys: new Set(), stick: null };     // manual control: W A S D, or the on-screen stick
     let mode = 'exploring', modeShown = '', idle = 0, userGoal = false;
     let sweep = 0, time = 0, dirty = true, pingT = 1, goalAlpha = 0;
     const pointer = { x: 0, z: 0, on: false, alpha: 0, nx: 0, ny: 0 };
 
     function setPath(p, byUser) {
-        path = p; travel = 0; pathLen = (p.length - 1) * STEP; userGoal = byUser;
+        path = p; pathIndex = 0; travel = 0; stall = 0; pathLen = (p.length - 1) * STEP; userGoal = byUser;
         const n = Math.min(p.length, MAXP);
         for (let k = 0; k < n; k++) {
             const a = p[Math.max(k - 1, 0)], b = p[Math.min(k + 1, n - 1)];
@@ -699,46 +698,73 @@ function start() {
         return [view.pos[0] + d[0] * t, view.pos[2] + d[2] * t];
     }
 
+    // ---------- Robot state and manual control ----------
+    const bodyState = { x: 0, y: 0, z: 0, quat: [0, 0, 0, 1], yaw: 0, vx: 0, vz: 0, wy: 0, sweep: 0 };
+    function readBody() {
+        const b = physics.chassis, q = b.quaternion;
+        bot.x = b.position.x / CELL_M; bot.z = b.position.z / CELL_M; bot.yaw = physics.yaw();
+        bot.speed = Math.hypot(b.velocity.x, b.velocity.z);
+        bodyState.x = b.position.x; bodyState.y = b.position.y; bodyState.z = b.position.z;
+        bodyState.quat[0] = q.x; bodyState.quat[1] = q.y; bodyState.quat[2] = q.z; bodyState.quat[3] = q.w;
+        bodyState.yaw = bot.yaw; bodyState.vx = b.velocity.x; bodyState.vz = b.velocity.z; bodyState.wy = b.angularVelocity.y;
+        bodyState.sweep = sweep;
+    }
+    function manualInput() {
+        let v = 0, w = 0;
+        if (drive.keys.has('KeyW')) v += 1;
+        if (drive.keys.has('KeyS')) v -= 0.6;
+        if (drive.keys.has('KeyA')) w += 1;
+        if (drive.keys.has('KeyD')) w -= 1;
+        if (drive.stick) { v += drive.stick.v; w += drive.stick.w; }
+        return v || w ? { v, w } : null;
+    }
+
     // ---------- Frame ----------
     function step(dt) {
         time += dt;
         sweep = (sweep + dt * 5.4) % (Math.PI * 2);
 
-        // drive along the path
-        let speed = 0;
-        if (path) {
-            const remaining = pathLen - travel;
-            speed = 5.2 * Math.min(1, 0.25 + remaining / 3) * Math.min(1, 0.3 + travel / 2);
-            travel = Math.min(pathLen, travel + speed * dt);
-            const f = travel / STEP, k = Math.min(Math.floor(f), path.length - 2), u = f - k;
-            const a = path[k], b = path[k + 1];
-            bot.x = a[0] + (b[0] - a[0]) * u; bot.z = a[1] + (b[1] - a[1]) * u;
-            const ahead = path[Math.min(k + 5, path.length - 1)];
-            if (Math.hypot(ahead[0] - bot.x, ahead[1] - bot.z) > 0.2) {
-                let dy = Math.atan2(ahead[1] - bot.z, ahead[0] - bot.x) - bot.yaw;
-                dy = Math.atan2(Math.sin(dy), Math.cos(dy));
-                bot.yaw += dy * (1 - Math.exp(-dt * 7));
-            }
-            if (remaining <= 0.001) {
-                path = null; idle = 0;
-                if (userGoal) mode = 'goal reached';
+        // command the robot: manual control wins, otherwise it follows the planned path
+        const cmd = physics.command, manual = manualInput();
+        if (manual) {
+            path = null; userGoal = true; idle = 0; mode = 'manual';
+            cmd.v = manual.v * 1.15; cmd.w = manual.w * 2.4;
+        } else if (path) {
+            // pure pursuit: steer at a point a little way along the path
+            const n = path.length, far = (k) => Math.hypot(path[k][0] - bot.x, path[k][1] - bot.z);
+            const before = pathIndex;
+            while (pathIndex < n - 1 && far(pathIndex + 1) <= far(pathIndex)) pathIndex++;
+            travel = pathIndex * STEP;
+            const target = path[Math.min(pathIndex + 9, n - 1)], remaining = far(n - 1);
+            let err = Math.atan2(target[1] - bot.z, target[0] - bot.x) - bot.yaw;
+            err = Math.atan2(Math.sin(err), Math.cos(err));
+            cmd.w = Math.max(-2.6, Math.min(2.6, -4 * err));
+            cmd.v = 1.05 * Math.max(0.12, 1 - Math.abs(err) / 1.1) * Math.min(1, 0.3 + remaining / 3);
+            // something wedged in the way: give up on this route rather than push forever
+            stall = pathIndex > before || bot.speed > 0.25 ? 0 : stall + dt;
+            if (remaining < 0.7 || pathIndex >= n - 1 || stall > 3) {
+                if (userGoal) mode = stall > 3 ? 'blocked' : 'goal reached';
+                path = null; idle = 0; cmd.v = 0; cmd.w = 0;
             }
         } else {
+            cmd.v = 0; cmd.w = 0;
             idle += dt;
             if (idle > (userGoal ? 2.4 : 0.5)) autoGoal();
         }
-        bot.walk += ((path ? 1 : 0) - bot.walk) * (1 - Math.exp(-dt * 8));
-        bot.phase = (bot.phase + speed * dt / 1.9) % 1;
+        physics.step(dt);
+        readBody();
+        robot.update(dt, bodyState);
+        syncProps();
 
         // spin the LiDAR: the fan of beams trails the sweep angle
-        const lidarY = 1.8;
+        const [ox, oy, oz] = physics.worldPoint(KIN.lidar[0], KIN.lidar[1] + 0.015, KIN.lidar[2]);
         for (let k = 0; k < BEAMS; k++) {
             const u = k / (BEAMS - 1);
             const angle = sweep - u * FAN;
             const [t, h] = castRay(angle, true);
             const o = k * 6;
             const hitY = h > 0 ? Math.min(h, 0.4 + ((k * 7) % 5) * 0.55) : 0;
-            beamPos[o] = bot.x; beamPos[o + 1] = lidarY; beamPos[o + 2] = bot.z;
+            beamPos[o] = ox / CELL_M; beamPos[o + 1] = oy / CELL_M; beamPos[o + 2] = oz / CELL_M;
             beamPos[o + 3] = bot.x + Math.cos(angle) * t; beamPos[o + 4] = hitY; beamPos[o + 5] = bot.z + Math.sin(angle) * t;
             const a = (1 - u) * (1 - u) * (h < 0 ? 0.35 : 1);
             beamAlpha[k * 2] = a * 0.9; beamAlpha[k * 2 + 1] = a * 0.25;
@@ -766,9 +792,6 @@ function start() {
         updateCamera(dt, scroll);
         const fade = 1 - scroll * 0.75;
 
-        robot.position.set(bot.x, Math.abs(Math.sin(bot.phase * Math.PI * 2)) * 0.035 * bot.walk, bot.z);
-        robot.rotation.y = -bot.yaw;
-        poseLegs(bot.phase, bot.walk);
         pool.position.x = bot.x; pool.position.z = bot.z;
 
         const u = pointsProgram.uniforms;
@@ -832,6 +855,9 @@ function start() {
         // reduced motion: one finished frame, redrawn only when something changes
         if (!dirty) return;
         dirty = false;
+        readBody();
+        robot.update(0, bodyState);
+        syncProps();
         draw(scrollProgress(), 10);
         updateHud(1);
     }
@@ -862,6 +888,42 @@ function start() {
     });
     canvas.addEventListener('pointerleave', () => { pointer.on = false; pointer.nx = 0; pointer.ny = 0; });
 
+    // manual driving: W/S forward and back, A/D turn (by key position, so any keyboard layout works)
+    const DRIVE_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD']);
+    const typing = (el) => el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
+    if (!reduced) {
+        window.addEventListener('keydown', (e) => {
+            if (!visible || e.metaKey || e.ctrlKey || e.altKey || typing(e.target) || !DRIVE_KEYS.has(e.code)) return;
+            drive.keys.add(e.code);
+            if (hint) hint.classList.add('is-used');
+        });
+        window.addEventListener('keyup', (e) => drive.keys.delete(e.code));
+        window.addEventListener('blur', () => drive.keys.clear());
+
+        const stick = hero.querySelector('.stick'), knob = stick && stick.querySelector('.stick-knob');
+        if (stick && knob) {
+            const move = (e) => {
+                const b = stick.getBoundingClientRect(), r = b.width / 2;
+                let dx = (e.clientX - b.left - r) / r, dy = (e.clientY - b.top - r) / r;
+                const m = Math.hypot(dx, dy);
+                if (m > 1) { dx /= m; dy /= m; }
+                knob.style.transform = `translate(${dx * (r - 15)}px, ${dy * (r - 15)}px)`;
+                const dead = (c) => (Math.abs(c) < 0.18 ? 0 : c);
+                drive.stick = { v: dead(-dy) * (dy > 0 ? 0.6 : 1), w: dead(-dx) };
+            };
+            const release = () => { drive.stick = null; knob.style.transform = ''; stick.classList.remove('is-active'); };
+            stick.addEventListener('pointerdown', (e) => {
+                stick.setPointerCapture(e.pointerId);
+                stick.classList.add('is-active');
+                move(e);
+                if (hint) hint.classList.add('is-used');
+            });
+            stick.addEventListener('pointermove', (e) => { if (drive.stick) move(e); });
+            stick.addEventListener('pointerup', release);
+            stick.addEventListener('pointercancel', release);
+        }
+    }
+
     canvas.addEventListener('webglcontextlost', (e) => {
         e.preventDefault();
         visible = false;
@@ -883,7 +945,6 @@ function start() {
     if (reduced) {
         revealAll();
         pointsProgram.uniforms.uLive.value = 0;
-        bot.yaw = 0.4;
         mode = 'idle';
         renderStill();
         window.addEventListener('scroll', () => { dirty = true; renderStill(); }, { passive: true });
@@ -891,6 +952,11 @@ function start() {
         last = performance.now();
         schedule();
     }
-    hero.classList.add('has-scene');
+    // show the scene once the robot is in it, without holding it back on a slow connection
+    const reveal = () => hero.classList.add('has-scene');
+    robot.load(new URL('../assets/quadruped.bin', import.meta.url))
+        .catch(() => robot.useFallback())
+        .finally(() => { dirty = true; if (reduced) renderStill(); reveal(); });
+    setTimeout(reveal, 2500);
     hero.dataset.points = String(pointCount);
 }
