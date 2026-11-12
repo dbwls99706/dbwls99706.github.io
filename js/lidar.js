@@ -722,8 +722,11 @@ function start() {
     const cam = { tx: 0, tz: 0, az: -0.36, shiftX: 0, shiftY: 0, dist: 46, px: 0, py: 0, follow: 0.62 };
     const view = { pos: [0, 0, 0], right: [1, 0, 0], up: [0, 1, 0], fwd: [0, 0, -1], aspect: 1 };
 
+    let sizedW = 0, sizedH = 0;
     function layout() {
         const w = hero.clientWidth, h = hero.clientHeight;
+        if (w === sizedW && h === sizedH) return false;     // resizing clears the canvas, so only when it really changed
+        sizedW = w; sizedH = h;
         renderer.setSize(w, h);
         view.aspect = w / h;
         camera.perspective({ aspect: view.aspect });
@@ -738,6 +741,7 @@ function start() {
         camera.projectionMatrix[9] = -cam.shiftY;
         pointsProgram.uniforms.uScale.value = 0.17 * h * dpr / (2 * FOV_T);
         dirty = true;
+        return true;
     }
 
     function updateCamera(dt, scroll) {
@@ -1031,6 +1035,9 @@ function start() {
                 if (hint) hint.classList.add('is-used');
             });
             stick.addEventListener('pointermove', (e) => { if (drive.stick) move(e); });
+            // a held thumb must not start a text selection, a callout or a context menu
+            stick.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+            stick.addEventListener('contextmenu', (e) => e.preventDefault());
             stick.addEventListener('pointerup', release);
             stick.addEventListener('pointercancel', release);
         }
@@ -1047,7 +1054,11 @@ function start() {
         if (visible) { last = performance.now(); schedule(); }
     }, { rootMargin: '80px' }).observe(hero);
     document.addEventListener('visibilitychange', () => { last = performance.now(); schedule(); });
-    new ResizeObserver(() => { layout(); if (reduced) renderStill(); }).observe(hero);
+    new ResizeObserver(() => {
+        if (!layout()) return;
+        // redraw in the same frame, so a resize never shows an empty canvas
+        if (reduced) renderStill(); else draw(scrollProgress(), 0);
+    }).observe(hero);
     new MutationObserver(() => { applyTheme(); if (reduced) renderStill(); }).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
 
     // ---------- Go ----------

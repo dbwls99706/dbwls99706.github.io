@@ -457,9 +457,8 @@ svg { display: block; }
         linear-gradient(var(--text-faint), var(--text-faint)) 7px 50% / 6px 1px no-repeat,
         linear-gradient(var(--text-faint), var(--text-faint)) calc(100% - 7px) 50% / 6px 1px no-repeat,
         var(--chip-bg);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
     touch-action: none;
+    -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
@@ -472,6 +471,7 @@ svg { display: block; }
     border-radius: 50%;
     background: radial-gradient(circle, var(--accent) 0 3px, var(--bg) 3.5px);
     transition: transform 0.18s var(--ease-out), background-color 0.15s ease;
+    will-change: transform;
 }
 .stick.is-active { border-color: var(--accent); }
 .stick.is-active .stick-knob {
@@ -480,6 +480,12 @@ svg { display: block; }
 }
 @media (pointer: coarse) {
     .hero.has-scene .stick { display: block; }
+    /* no blur over the live canvas on phones: re-blurring it every frame makes some mobile GPUs flicker */
+    .hud,
+    .hero-hint-in {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
 }
 
 .hero-hint.is-used .hero-hint-in {
