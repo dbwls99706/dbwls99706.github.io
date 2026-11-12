@@ -21,7 +21,7 @@ function start() {
 
     // ---------- World ----------
     const W = 76, H = 48;
-    const CELL_M = 0.25;            // metres per cell, used for the pose readout
+    const CELL_M = 0.2;             // metres per cell: sets the robot's scale and the pose readout
     const RANGE = 17;               // LiDAR range in cells
     const MAX_H = 5;
 
@@ -475,7 +475,7 @@ function start() {
     pool.position.y = 0.02;
     pool.setParent(scene);
 
-    // ---------- Robot ----------
+    // ---------- Robot (placeholder shown only if the Go2 model cannot be loaded) ----------
     function boxes(list) {
         const p = [], n = [], ix = [];
         for (const [cx, cy, cz, sx, sy, sz] of list) {
@@ -500,6 +500,9 @@ function start() {
     }
     const robot = new Transform();
     robot.setParent(scene);
+    const blockBot = new Transform();
+    blockBot.setParent(robot);
+    blockBot.visible = false;
     const bodyProgram = flatProgram(), headProgram = flatProgram(), legProgram = flatProgram();
     const HIP_Y = 1.12, L1 = 0.7, L2 = 0.7;
     const body = new Mesh(gl, { geometry: boxes([[0, 1.3, 0, 2.3, 0.44, 0.92]]), program: bodyProgram, frustumCulled: false });
@@ -507,7 +510,7 @@ function start() {
         geometry: boxes([[1.32, 1.38, 0, 0.5, 0.36, 0.62], [0.55, 1.66, 0, 0.34, 0.28, 0.34]]),
         program: headProgram, frustumCulled: false,
     });
-    body.setParent(robot); head.setParent(robot);
+    body.setParent(blockBot); head.setParent(blockBot);
 
     const HIPS = [[0.86, 0.52, 0], [0.86, -0.52, 0.5], [-0.86, 0.52, 0.5], [-0.86, -0.52, 0]];   // x, z, gait phase offset
     const SEG = 8, T = 0.075;
@@ -521,7 +524,7 @@ function start() {
         position: { size: 3, data: legPos, usage: gl.DYNAMIC_DRAW }, normal: { size: 3, data: legNormal }, index: { data: legIndex },
     });
     const legs = new Mesh(gl, { geometry: legGeo, program: legProgram, frustumCulled: false });
-    legs.setParent(robot);
+    legs.setParent(blockBot);
 
     function segment(s, ax, ay, bx, by, z) {
         let nx = -(by - ay), ny = bx - ax;
@@ -551,6 +554,118 @@ function start() {
         legGeo.attributes.position.needsUpdate = true;
     }
 
+    // ---------- Unitree Go2 ----------
+    // Visual meshes and joint layout come from Unitree's published model; the legs are driven by the
+    // same two-link inverse kinematics as the real leg (thigh and calf are both 0.213 m).
+    const GO2 = { hipX: 0.1934, hipZ: 0.0465, thighZ: 0.0955, link: 0.213, stand: 0.3, foot: 0.022, stride: 0.3, lift: 0.075 };
+    const go2Program = new Program(gl, {
+        vertex: `
+            attribute vec3 position;
+            attribute vec3 normal;
+            attribute vec3 color;
+            uniform mat4 modelViewMatrix;
+            uniform mat4 projectionMatrix;
+            uniform mat3 normalMatrix;
+            varying vec3 vNormal;
+            varying vec3 vColor;
+            void main() {
+                vNormal = normalMatrix * normal;
+                vColor = color;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }`,
+        fragment: `
+            precision highp float;
+            uniform vec3 uRim;
+            uniform float uAmbient, uTint;
+            varying vec3 vNormal;
+            varying vec3 vColor;
+            void main() {
+                vec3 n = normalize(vNormal);
+                float diffuse = max(dot(n, normalize(vec3(0.45, 0.75, 0.5))), 0.0);
+                float sky = 0.5 + 0.5 * n.y;
+                vec3 c = vColor * uTint * (uAmbient + (1.0 - uAmbient) * diffuse) * mix(0.78, 1.06, sky);
+                c += uRim * pow(1.0 - max(n.z, 0.0), 2.5);
+                gl_FragColor = vec4(c, 1.0);
+            }`,
+        uniforms: { uRim: { value: [0, 0, 0] }, uAmbient: { value: 0.4 }, uTint: { value: 1 } },
+        cullFace: false,
+    });
+    const go2 = { rig: new Transform(), base: new Transform(), legs: [], ready: false };
+    go2.rig.setParent(robot);
+    go2.rig.scale.set(1 / CELL_M);
+    go2.rig.visible = false;
+    go2.base.setParent(go2.rig);
+
+    async function loadGo2() {
+        const res = await fetch(new URL('../assets/go2.bin', import.meta.url));
+        if (!res.ok) throw new Error('go2 model unavailable');
+        const buf = await res.arrayBuffer();
+        const jsonLength = new DataView(buf).getUint32(0, true);
+        const header = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 4, jsonLength)));
+        const n = header.vertexCount;
+        let offset = 4 + jsonLength;
+        const pos = new Int16Array(buf, offset, n * 3); offset += Math.ceil(n * 6 / 4) * 4;
+        const nrm = new Int8Array(buf, offset, n * 4); offset += n * 4;
+        const col = new Uint8Array(buf, offset, n * 4); offset += n * 4;
+        const idx = new Uint16Array(buf, offset, header.indexCount);
+
+        const attach = (name, parent) => {
+            const part = header.parts[name], count = part.vertexCount;
+            const position = new Float32Array(count * 3), normal = new Float32Array(count * 3), color = new Float32Array(count * 3);
+            for (let i = 0; i < count; i++) {
+                const v = part.vertexStart + i;
+                for (let k = 0; k < 3; k++) {
+                    position[i * 3 + k] = pos[v * 3 + k] * header.scale;
+                    normal[i * 3 + k] = nrm[v * 4 + k] / 127;
+                    color[i * 3 + k] = col[v * 4 + k] / 255;
+                }
+            }
+            const mesh = new Mesh(gl, {
+                program: go2Program, frustumCulled: false,
+                geometry: new Geometry(gl, {
+                    position: { size: 3, data: position }, normal: { size: 3, data: normal }, color: { size: 3, data: color },
+                    index: { data: idx.slice(part.indexStart, part.indexStart + part.indexCount) },
+                }),
+            });
+            mesh.setParent(parent);
+        };
+
+        attach('base', go2.base);
+        // front/rear (x), left/right (z: left is -z), and the trot pairs FL+RR / FR+RL
+        for (const [name, sx, sz, side, phase] of [['FL', 1, -1, 'L', 0], ['FR', 1, 1, 'R', 0.5], ['RL', -1, -1, 'L', 0.5], ['RR', -1, 1, 'R', 0]]) {
+            const hip = new Transform(), thigh = new Transform(), calf = new Transform();
+            hip.position.set(sx * GO2.hipX, 0, sz * GO2.hipZ); hip.setParent(go2.base);
+            thigh.position.set(0, 0, sz * GO2.thighZ); thigh.setParent(hip);
+            calf.position.set(0, -GO2.link, 0); calf.setParent(thigh);
+            attach('hip' + name, hip); attach('thigh' + side, thigh); attach('calf' + side, calf);
+            go2.legs.push({ thigh, calf, phase });
+        }
+        go2.ready = true;
+        go2.rig.visible = true;
+        blockBot.visible = false;
+        dirty = true;
+    }
+
+    function poseGo2(phase, walk) {
+        const L = GO2.link, stride = GO2.stride * walk, lift = GO2.lift * walk;
+        go2.base.position.y = GO2.stand + GO2.foot + Math.abs(Math.sin(phase * Math.PI * 2)) * 0.008 * walk;
+        for (const leg of go2.legs) {
+            const t = (phase + leg.phase) % 1;
+            let fx, fy = 0;
+            if (t < 0.5) fx = stride / 2 - (t / 0.5) * stride;
+            else { const u = (t - 0.5) / 0.5; fx = -stride / 2 + (u * u * (3 - 2 * u)) * stride; fy = lift * Math.sin(Math.PI * u); }
+            // foot target relative to the thigh joint, in the leg's sagittal plane
+            const dx = fx, dy = fy - GO2.stand;
+            const d = Math.min(Math.hypot(dx, dy), 2 * L - 0.002);
+            const a = Math.atan2(dy, dx), A = Math.acos(d / (2 * L));
+            const tx = Math.cos(a - A), ty = Math.sin(a - A);                 // thigh direction, knee behind
+            const cx = dx - L * tx, cy = dy - L * ty;                         // calf direction
+            const q2 = Math.atan2(-tx, -ty), q3 = Math.atan2(-cx, -cy) - q2;  // joint angles as on the robot
+            leg.thigh.rotation.z = -q2;
+            leg.calf.rotation.z = -q3;
+        }
+    }
+
     // ---------- Theme ----------
     function applyTheme() {
         const t = THEMES[root.dataset.theme === 'light' ? 'light' : 'dark'];
@@ -568,6 +683,9 @@ function start() {
         bodyProgram.uniforms.uColor.value = hex(t.body);
         headProgram.uniforms.uColor.value = hex(t.leg);
         legProgram.uniforms.uColor.value = hex(t.leg);
+        go2Program.uniforms.uRim.value = t.additive ? [0.1, 0.17, 0.24] : [0.05, 0.05, 0.05];
+        go2Program.uniforms.uAmbient.value = t.additive ? 0.42 : 0.5;
+        go2Program.uniforms.uTint.value = t.additive ? 1 : 0.86;
         dirty = true;
     }
 
@@ -728,10 +846,11 @@ function start() {
             if (idle > (userGoal ? 2.4 : 0.5)) autoGoal();
         }
         bot.walk += ((path ? 1 : 0) - bot.walk) * (1 - Math.exp(-dt * 8));
-        bot.phase = (bot.phase + speed * dt / 1.9) % 1;
+        // one gait cycle covers two strides
+        bot.phase = (bot.phase + speed * dt / (go2.ready ? 2 * GO2.stride / CELL_M : 1.9)) % 1;
 
         // spin the LiDAR: the fan of beams trails the sweep angle
-        const lidarY = 1.8;
+        const lidarY = 1.5;
         for (let k = 0; k < BEAMS; k++) {
             const u = k / (BEAMS - 1);
             const angle = sweep - u * FAN;
@@ -766,9 +885,13 @@ function start() {
         updateCamera(dt, scroll);
         const fade = 1 - scroll * 0.75;
 
-        robot.position.set(bot.x, Math.abs(Math.sin(bot.phase * Math.PI * 2)) * 0.035 * bot.walk, bot.z);
+        robot.position.set(bot.x, 0, bot.z);
         robot.rotation.y = -bot.yaw;
-        poseLegs(bot.phase, bot.walk);
+        if (go2.ready) poseGo2(bot.phase, bot.walk);
+        else if (blockBot.visible) {
+            blockBot.position.y = Math.abs(Math.sin(bot.phase * Math.PI * 2)) * 0.035 * bot.walk;
+            poseLegs(bot.phase, bot.walk);
+        }
         pool.position.x = bot.x; pool.position.z = bot.z;
 
         const u = pointsProgram.uniforms;
@@ -891,6 +1014,11 @@ function start() {
         last = performance.now();
         schedule();
     }
-    hero.classList.add('has-scene');
+    // show the scene once the robot is in it, without holding it back on a slow connection
+    const reveal = () => hero.classList.add('has-scene');
+    loadGo2()
+        .catch(() => { blockBot.visible = true; dirty = true; })
+        .finally(() => { if (reduced) renderStill(); reveal(); });
+    setTimeout(reveal, 2500);
     hero.dataset.points = String(pointCount);
 }
