@@ -24,7 +24,10 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="css/style.css">
     <link rel="modulepreload" href="vendor/ogl.min.js">
-    <link rel="preload" href="assets/go2.bin" as="fetch" crossorigin>
+    <link rel="modulepreload" href="vendor/cannon-es.min.js">
+    <link rel="modulepreload" href="js/physics.js">
+    <link rel="modulepreload" href="js/robot.js">
+    <link rel="preload" href="assets/quadruped.bin" as="fetch" crossorigin>
     <script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/projects/*"},"eagerness":"moderate"}]}</script>
 </head>
 <body class="page-home">
@@ -48,7 +51,7 @@
 
     <main id="main">
         <section class="hero" aria-label="소개">
-            <canvas class="hero-canvas" id="lidar" role="img" aria-label="사족보행 로봇이 LiDAR로 공장 바닥 지도를 만드는 시뮬레이션. 지도를 누르면 로봇이 그 지점까지 경로를 계획해 주행합니다."></canvas>
+            <canvas class="hero-canvas" id="lidar" role="img" aria-label="사족보행 로봇이 LiDAR로 공장 바닥 지도를 만드는 시뮬레이션. 지도를 누르면 로봇이 그 지점까지 경로를 계획해 주행하고, W A S D 키나 조이스틱으로 직접 조종할 수 있습니다."></canvas>
             <div class="hero-scrim" aria-hidden="true"></div>
 
             <dl class="hud" aria-hidden="true">
@@ -68,7 +71,8 @@
                 </div>
             </div>
 
-            <p class="hero-hint" aria-hidden="true"><span class="hero-hint-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>지도를 누르면 로봇이 그 지점으로 주행합니다</span></p>
+            <p class="hero-hint" aria-hidden="true"><span class="hero-hint-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg><span>지도를 누르면 그 지점으로 주행합니다</span><span class="hint-key">W A S D 키로 직접 조종</span><span class="hint-touch">조이스틱으로 직접 조종</span></span></p>
+            <div class="stick" aria-hidden="true"><span class="stick-knob"></span></div>
         </section>
 
         <section class="sec" id="experience">

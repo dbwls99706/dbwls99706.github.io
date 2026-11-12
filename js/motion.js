@@ -41,7 +41,7 @@
         var hero = { trigger: '.hero', start: 'top top', scrub: true };
         gsap.to('.hero-name', { '--squeeze': 63, ease: 'none', scrollTrigger: Object.assign({ end: 'bottom top' }, hero) });
         gsap.to('.hero-inner', { yPercent: -14, autoAlpha: 0, ease: 'none', scrollTrigger: Object.assign({ end: '80% top' }, hero) });
-        gsap.to('.hud, .hero-hint', { autoAlpha: 0, ease: 'none', scrollTrigger: Object.assign({ end: '35% top' }, hero) });
+        gsap.to('.hud, .hero-hint, .stick', { autoAlpha: 0, ease: 'none', scrollTrigger: Object.assign({ end: '35% top' }, hero) });
 
         if (fromSite) return;
 

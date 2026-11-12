@@ -300,6 +300,7 @@ svg { display: block; }
 .hero.has-scene .hero-canvas { opacity: 1; }
 .hero.no-webgl .hero-canvas,
 .hero.no-webgl .hud,
+.hero.no-webgl .stick,
 .hero.no-webgl .hero-hint { display: none; }
 .hero:not(.has-scene) :is(.hud, .hero-hint) { visibility: hidden; }
 .hero.no-webgl::before { opacity: 0.7; }
@@ -428,6 +429,59 @@ svg { display: block; }
     color: var(--accent);
     flex-shrink: 0;
 }
+.hero-hint-in > span + span {
+    padding-left: 0.625rem;
+    border-left: 1px solid var(--line-strong);
+}
+.hint-touch { display: none; }
+@media (pointer: coarse) {
+    .hint-key { display: none; }
+    .hint-touch { display: inline; }
+}
+
+/* on-screen stick for driving the robot on touch screens: a quiet ring that sits level with the contact icons */
+.stick {
+    --size: 76px;
+    display: none;
+    position: absolute;
+    right: var(--edge);
+    bottom: calc(clamp(2.25rem, 7vh, 4.75rem) + 4rem);
+    width: var(--size);
+    height: var(--size);
+    border: 1px solid var(--line-strong);
+    border-radius: 50%;
+    /* four faint ticks mark forward, back and the two turns */
+    background:
+        linear-gradient(var(--text-faint), var(--text-faint)) 50% 7px / 1px 6px no-repeat,
+        linear-gradient(var(--text-faint), var(--text-faint)) 50% calc(100% - 7px) / 1px 6px no-repeat,
+        linear-gradient(var(--text-faint), var(--text-faint)) 7px 50% / 6px 1px no-repeat,
+        linear-gradient(var(--text-faint), var(--text-faint)) calc(100% - 7px) 50% / 6px 1px no-repeat,
+        var(--chip-bg);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: border-color 0.2s ease;
+}
+.stick-knob {
+    position: absolute;
+    inset: calc(50% - 15px);
+    border: 1.5px solid var(--accent);
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--accent) 0 3px, var(--bg) 3.5px);
+    transition: transform 0.18s var(--ease-out), background-color 0.15s ease;
+}
+.stick.is-active { border-color: var(--accent); }
+.stick.is-active .stick-knob {
+    background: var(--accent);
+    transition: background-color 0.15s ease;
+}
+@media (pointer: coarse) {
+    .hero.has-scene .stick { display: block; }
+}
+
 .hero-hint.is-used .hero-hint-in {
     opacity: 0;
     visibility: hidden;
@@ -1153,6 +1207,15 @@ a.pr-name { color: var(--text); }
         bottom: auto;
         font-size: 0.75rem;
     }
+    .stick {
+        /* centred on the row of contact icons (46px tall), opposite them */
+        right: var(--gutter);
+        bottom: calc(clamp(2.25rem, 7vh, 4.75rem) + 23px - var(--size) / 2);
+    }
+    .hero-hint-in {
+        flex-wrap: wrap;
+        border-radius: 14px;
+    }
     .hero-scrim {
         background:
             linear-gradient(to bottom, var(--bg) 0%, transparent 30%),
@@ -1239,7 +1302,8 @@ a.pr-name { color: var(--text); }
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
-    .hero-hint { display: none; }
+    .hero-hint,
+    .hero.has-scene .stick { display: none; }
     .hero-canvas { cursor: default; }
     .row:hover .row-title-text { transform: none; }
 }
